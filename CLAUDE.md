@@ -31,6 +31,8 @@ There is no test runner configured yet.
 
 Key installed but not yet wired up: `@react-navigation/bottom-tabs`, `expo-haptics`, `expo-image`, `react-native-reanimated`, `react-native-gesture-handler`.
 
+- **Lesson data**: Static script/lesson content lives in `data/<script-id>/` as JSON files (`meta.json` for script metadata, `lesson-XX.json` for individual lessons). TypeScript interfaces define the shape. Lessons are loaded lazily via dynamic `import()` so only the needed lesson is in memory.
+
 ## Workflows
 Before any modifications that change the architecture of the project or implement a new feature:
 - ask clarifying questions to gain a clear idea of what is expected
