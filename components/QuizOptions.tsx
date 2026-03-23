@@ -1,0 +1,200 @@
+import { useRef, useState } from "react";
+import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
+import type { Lesson } from "@/types/data";
+
+const DEFAULT_COUNT = 20;
+const MIN_COUNT = 1;
+const MAX_COUNT = 999;
+const HOLD_DELAY = 200;
+const HOLD_INTERVAL = 80;
+
+interface Props {
+  lesson: Lesson;
+  onStart: (questionCount: number) => void;
+  onBack: () => void;
+}
+
+export default function QuizOptions({ lesson, onStart, onBack }: Props) {
+  const [count, setCount] = useState(DEFAULT_COUNT);
+  // Text field value kept as string so the user can clear and retype freely
+  const [inputValue, setInputValue] = useState(String(DEFAULT_COUNT));
+  const holdTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const holdInterval = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  function clamp(n: number) {
+    return Math.min(MAX_COUNT, Math.max(MIN_COUNT, n));
+  }
+
+  function applyDelta(delta: number) {
+    setCount((c) => {
+      const next = clamp(c + delta);
+      setInputValue(String(next));
+      return next;
+    });
+  }
+
+  function startHold(delta: number) {
+    holdTimeout.current = setTimeout(() => {
+      holdInterval.current = setInterval(() => applyDelta(delta), HOLD_INTERVAL);
+    }, HOLD_DELAY);
+  }
+
+  function stopHold() {
+    if (holdTimeout.current) clearTimeout(holdTimeout.current);
+    if (holdInterval.current) clearInterval(holdInterval.current);
+  }
+
+  function handleInputChange(text: string) {
+    // Allow empty string while typing
+    setInputValue(text);
+    const parsed = parseInt(text, 10);
+    if (!isNaN(parsed)) {
+      setCount(clamp(parsed));
+    }
+  }
+
+  function handleInputBlur() {
+    // Snap display value to the clamped count when the field loses focus
+    setInputValue(String(count));
+  }
+
+  return (
+    <View style={styles.container}>
+      <Text style={styles.title}>{lesson.title}</Text>
+      <Text style={styles.subtitle}>{lesson.entries.length} characters</Text>
+
+      <View style={styles.optionBlock}>
+        <Text style={styles.optionLabel}>Questions</Text>
+        <View style={styles.stepper}>
+          <Pressable
+            style={({ pressed }) => [
+              styles.stepButton,
+              pressed && styles.stepButtonPressed,
+            ]}
+            onPress={() => applyDelta(-1)}
+            onPressIn={() => startHold(-1)}
+            onPressOut={stopHold}
+          >
+            <Text style={styles.stepButtonText}>−</Text>
+          </Pressable>
+
+          <TextInput
+            style={styles.stepValue}
+            value={inputValue}
+            onChangeText={handleInputChange}
+            onBlur={handleInputBlur}
+            keyboardType="number-pad"
+            selectTextOnFocus
+            maxLength={3}
+            returnKeyType="done"
+          />
+
+          <Pressable
+            style={({ pressed }) => [
+              styles.stepButton,
+              pressed && styles.stepButtonPressed,
+            ]}
+            onPress={() => applyDelta(1)}
+            onPressIn={() => startHold(1)}
+            onPressOut={stopHold}
+          >
+            <Text style={styles.stepButtonText}>+</Text>
+          </Pressable>
+        </View>
+      </View>
+
+      <Pressable style={styles.startButton} onPress={() => onStart(count)}>
+        <Text style={styles.startButtonText}>Start Quiz</Text>
+      </Pressable>
+
+      <Pressable style={styles.backButton} onPress={onBack}>
+        <Text style={styles.backButtonText}>Back</Text>
+      </Pressable>
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+    padding: 24,
+    backgroundColor: "#747ACC",
+  },
+  title: {
+    fontSize: 28,
+    fontFamily: "NotoSerif_700Bold",
+    color: "#fff",
+    marginBottom: 6,
+  },
+  subtitle: {
+    fontSize: 15,
+    fontFamily: "NotoSerif_300Light",
+    color: "#fff",
+    marginBottom: 48,
+  },
+  optionBlock: {
+    alignItems: "center",
+    marginBottom: 48,
+  },
+  optionLabel: {
+    fontSize: 16,
+    fontFamily: "NotoSerif_600SemiBold",
+    color: "#8CB9FA",
+    fontWeight: "600",
+    marginBottom: 16,
+    textTransform: "uppercase",
+    letterSpacing: 0.8,
+  },
+  stepper: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 20,
+  },
+  stepButton: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: "#8CB9FA",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  stepButtonPressed: {
+    backgroundColor: "#60A0FC",
+  },
+  stepButtonText: {
+    fontSize: 24,
+    color: "#fff",
+    lineHeight: 28,
+  },
+  stepValue: {
+    fontSize: 40,
+    fontFamily: "NotoSerif_700Bold",
+    color: "#fff",
+    minWidth: 70,
+    maxWidth: 110,
+    textAlign: "center",
+  },
+  startButton: {
+    backgroundColor: "#363DC2",
+    paddingHorizontal: 48,
+    paddingVertical: 16,
+    borderRadius: 12,
+    marginBottom: 16,
+  },
+  startButtonText: {
+    color: "#fff",
+    fontSize: 18,
+    fontFamily: "NotoSerif_700Bold",
+  },
+  backButton: {
+    paddingVertical: 12,
+    paddingHorizontal: 24,
+  },
+  backButtonText: {
+    color: "#fff",
+    fontSize: 16,
+    fontFamily: "NotoSerif_400Regular",
+  },
+});
