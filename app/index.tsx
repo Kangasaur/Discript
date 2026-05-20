@@ -1,113 +1,125 @@
-import { useMemo, useState } from "react";
-import { StyleSheet, Text, View } from "react-native";
-import LessonButton from "@/components/LessonButton";
-import Quiz from "@/components/Quiz";
-import QuizOptions from "@/components/QuizOptions";
-import { ScriptThemeProvider, useScriptTheme } from "@/contexts/ScriptTheme";
-import type { Lesson } from "@/types/data";
-import cyrillicMeta from "@/data/cyrillic/meta.json";
+import { useRouter, type Href } from "expo-router";
+import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { getAllScripts } from "@/contexts/ScriptTheme";
+import appTheme from "@/data/app.json";
+import type { AppTheme, Script } from "@/types/data";
 
-function formatLessonLabel(lessonId: string): string {
-  // "lesson-01" -> "Lesson 1"
-  const match = lessonId.match(/lesson-(\d+)/);
-  if (match) return `Lesson ${parseInt(match[1], 10)}`;
-  return lessonId;
-}
+// TODO: read last-opened script id from local storage and `router.replace`
+// to that route before rendering the landing UI.
 
-// Metro requires statically-analyzable import paths, so all lesson files
-// must be enumerated explicitly here.
-const LESSON_LOADERS: Record<string, () => Promise<{ default: Lesson }>> = {
-  "cyrillic/lesson-01": () => import("@/data/cyrillic/lesson-01.json"),
-};
-
-type Screen = "menu" | "options" | "quiz";
+const theme = appTheme as AppTheme;
 
 export default function Index() {
-  return (
-    <ScriptThemeProvider scriptId="cyrillic">
-      <IndexContent />
-    </ScriptThemeProvider>
-  );
-}
+  const router = useRouter();
+  const scripts = getAllScripts();
 
-function IndexContent() {
-  const { colors } = useScriptTheme();
-  const styles = useMemo(() => makeStyles(colors), [colors]);
-
-  const [screen, setScreen] = useState<Screen>("menu");
-  const [activeLesson, setActiveLesson] = useState<Lesson | null>(null);
-  const [questionCount, setQuestionCount] = useState(20);
-  const [loadingLesson, setLoadingLesson] = useState<string | null>(null);
-
-  async function openOptions(scriptId: string, lessonId: string) {
-    const loader = LESSON_LOADERS[`${scriptId}/${lessonId}`];
-    if (!loader) return;
-    setLoadingLesson(lessonId);
-    const module = await loader();
-    setActiveLesson(module.default as Lesson);
-    setLoadingLesson(null);
-    setScreen("options");
-  }
-
-  function startQuiz(count: number) {
-    setQuestionCount(count);
-    setScreen("quiz");
-  }
-
-  function exitToMenu() {
-    setScreen("menu");
-    setActiveLesson(null);
-  }
-
-  if (screen === "options" && activeLesson) {
-    return (
-      <QuizOptions
-        lesson={activeLesson}
-        onStart={startQuiz}
-        onBack={exitToMenu}
-      />
-    );
-  }
-
-  if (screen === "quiz" && activeLesson) {
-    return (
-      <Quiz
-        lesson={activeLesson}
-        questionCount={questionCount}
-        onExit={exitToMenu}
-      />
-    );
+  function openScript(scriptId: string) {
+    router.push(`/${scriptId}` as Href);
   }
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>{cyrillicMeta.name}</Text>
-      {cyrillicMeta.lessons.map((lessonId) => (
-        <LessonButton
-          key={lessonId}
-          label={formatLessonLabel(lessonId)}
-          loading={loadingLesson === lessonId}
-          onPress={() => openOptions(cyrillicMeta.id, lessonId)}
-        />
-      ))}
-    </View>
+    <ScrollView
+      contentContainerStyle={styles.container}
+      style={styles.scroll}
+    >
+      <Text style={styles.title}>{theme.name}</Text>
+      <Text style={styles.tagline}>{theme.tagline}</Text>
+
+      <Text style={styles.pickerLabel}>What would you like to learn?</Text>
+      <View style={styles.pickerList}>
+        {scripts.map((script) => (
+          <ScriptCard key={script.id} script={script} onPress={openScript} />
+        ))}
+      </View>
+    </ScrollView>
   );
 }
 
-function makeStyles(colors: ReturnType<typeof useScriptTheme>["colors"]) {
-  return StyleSheet.create({
-    container: {
-      flex: 1,
-      alignItems: "center",
-      justifyContent: "center",
-      padding: 24,
-      backgroundColor: colors.background,
-    },
-    title: {
-      fontSize: 34,
-      fontFamily: "NotoSerif_700Bold",
-      marginBottom: 32,
-      color: colors.onPrimary,
-    },
-  });
+interface ScriptCardProps {
+  script: Script;
+  onPress: (id: string) => void;
 }
+
+function ScriptCard({ script, onPress }: ScriptCardProps) {
+  return (
+    <Pressable
+      style={({ pressed }) => [
+        styles.card,
+        { backgroundColor: script.colors.background },
+        pressed && styles.cardPressed,
+      ]}
+      onPress={() => onPress(script.id)}
+    >
+      <Text style={[styles.cardIcon, { color: script.colors.onPrimary }]}>
+        {script.icon}
+      </Text>
+      <Text style={[styles.cardName, { color: script.colors.onPrimary }]}>
+        {script.name}
+      </Text>
+    </Pressable>
+  );
+}
+
+const styles = StyleSheet.create({
+  scroll: {
+    flex: 1,
+    backgroundColor: theme.colors.background,
+  },
+  container: {
+    flexGrow: 1,
+    alignItems: "center",
+    justifyContent: "center",
+    paddingVertical: 48,
+    paddingHorizontal: 24,
+  },
+  title: {
+    fontSize: 44,
+    fontFamily: "NotoSerif_700Bold",
+    color: theme.colors.text,
+    marginBottom: 8,
+  },
+  tagline: {
+    fontSize: 15,
+    fontFamily: "NotoSerif_300Light_Italic",
+    color: theme.colors.textMuted,
+    marginBottom: 48,
+    textAlign: "center",
+    maxWidth: 320,
+  },
+  pickerLabel: {
+    fontSize: 13,
+    fontFamily: "NotoSerif_600SemiBold",
+    color: theme.colors.textMuted,
+    textTransform: "uppercase",
+    letterSpacing: 1.2,
+    marginBottom: 16,
+  },
+  pickerList: {
+    width: "100%",
+    maxWidth: 360,
+    gap: 12,
+  },
+  card: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: 20,
+    paddingVertical: 18,
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: theme.colors.cardBorder,
+  },
+  cardPressed: {
+    opacity: 0.85,
+  },
+  cardIcon: {
+    fontSize: 32,
+    fontFamily: "NotoSerif_400Regular",
+    width: 56,
+    textAlign: "center",
+  },
+  cardName: {
+    fontSize: 20,
+    fontFamily: "NotoSerif_700Bold",
+    marginLeft: 12,
+  },
+});

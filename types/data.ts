@@ -20,6 +20,19 @@ export interface Script {
   colors: ScriptColors;
 }
 
+export interface AppTheme {
+  name: string;
+  tagline: string;
+  colors: {
+    background: string;
+    primary: string;
+    onPrimary: string;
+    text: string;
+    textMuted: string;
+    cardBorder: string;
+  };
+}
+
 export type LessonType = "standard" | (string & {});
 
 export interface Entry {

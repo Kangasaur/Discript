@@ -1,0 +1,12 @@
+{
+  "name": "Discript",
+  "tagline": "Lessons for writing systems worldwide",
+  "colors": {
+    "background": "#1F2937",
+    "primary": "#4F46E5",
+    "onPrimary": "#ffffff",
+    "text": "#ffffff",
+    "textMuted": "#9CA3AF",
+    "cardBorder": "#374151"
+  }
+}
