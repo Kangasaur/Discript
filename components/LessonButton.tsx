@@ -1,4 +1,7 @@
+import { useMemo } from "react";
 import { ActivityIndicator, Pressable, StyleSheet, Text } from "react-native";
+import { useScriptTheme } from "@/contexts/ScriptTheme";
+import type { ScriptColors } from "@/types/data";
 
 interface Props {
   label: string;
@@ -7,6 +10,9 @@ interface Props {
 }
 
 export default function LessonButton({ label, onPress, loading }: Props) {
+  const { colors } = useScriptTheme();
+  const styles = useMemo(() => makeStyles(colors), [colors]);
+
   return (
     <Pressable
       style={({ pressed }) => [
@@ -18,7 +24,7 @@ export default function LessonButton({ label, onPress, loading }: Props) {
       disabled={loading}
     >
       {loading ? (
-        <ActivityIndicator color="#fff" />
+        <ActivityIndicator color={colors.onPrimary} />
       ) : (
         <Text style={styles.label}>{label}</Text>
       )}
@@ -26,25 +32,27 @@ export default function LessonButton({ label, onPress, loading }: Props) {
   );
 }
 
-const styles = StyleSheet.create({
-  button: {
-    backgroundColor: "#363DC2",
-    paddingHorizontal: 32,
-    paddingVertical: 16,
-    borderRadius: 12,
-    marginVertical: 8,
-    minWidth: 220,
-    alignItems: "center",
-  },
-  buttonPressed: {
-    opacity: 0.85,
-  },
-  buttonDisabled: {
-    opacity: 0.6,
-  },
-  label: {
-    color: "#fff",
-    fontSize: 18,
-    fontFamily: "NotoSerif_700Bold",
-  },
-});
+function makeStyles(colors: ScriptColors) {
+  return StyleSheet.create({
+    button: {
+      backgroundColor: colors.primary,
+      paddingHorizontal: 32,
+      paddingVertical: 16,
+      borderRadius: 12,
+      marginVertical: 8,
+      minWidth: 220,
+      alignItems: "center",
+    },
+    buttonPressed: {
+      opacity: 0.85,
+    },
+    buttonDisabled: {
+      opacity: 0.6,
+    },
+    label: {
+      color: colors.onPrimary,
+      fontSize: 18,
+      fontFamily: "NotoSerif_700Bold",
+    },
+  });
+}

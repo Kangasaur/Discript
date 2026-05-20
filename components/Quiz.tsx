@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import {
   KeyboardAvoidingView,
   Platform,
@@ -8,7 +8,8 @@ import {
   Pressable,
   StyleSheet,
 } from "react-native";
-import type { Entry, Lesson } from "@/types/data";
+import { useScriptTheme } from "@/contexts/ScriptTheme";
+import type { Entry, Lesson, ScriptColors } from "@/types/data";
 
 interface Props {
   lesson: Lesson;
@@ -57,6 +58,9 @@ function formatTime(seconds: number): string {
 }
 
 export default function Quiz({ lesson, questionCount, onExit }: Props) {
+  const { colors } = useScriptTheme();
+  const styles = useMemo(() => makeStyles(colors), [colors]);
+
   const [queue] = useState(() => buildQueue(lesson.entries, questionCount));
   const [index, setIndex] = useState(0);
   const [input, setInput] = useState("");
@@ -107,7 +111,7 @@ export default function Quiz({ lesson, questionCount, onExit }: Props) {
 
   if (status === "done") {
     return (
-      <View style={styles.container}>
+      <View style={[styles.outer, styles.container]}>
         <Text style={styles.doneTitle}>Quiz Complete!</Text>
         <Text style={styles.doneStat}>
           {score} / {total} correct
@@ -180,112 +184,114 @@ export default function Quiz({ lesson, questionCount, onExit }: Props) {
   );
 }
 
-const styles = StyleSheet.create({
-  outer: {
-    flex: 1,
-    backgroundColor: "#747ACC",
-  },
-  container: {
-    flex: 1,
-    alignItems: "center",
-    justifyContent: "center",
-    padding: 24,
-  },
-  header: {
-    position: "absolute",
-    top: 0,
-    left: 0,
-    right: 0,
-    flexDirection: "row",
-    justifyContent: "space-between",
-    paddingHorizontal: 24,
-  },
-  headerText: {
-    fontSize: 15,
-    fontFamily: "NotoSerif_600SemiBold",
-    color: "#9EBBE8",
-  },
-  character: {
-    fontSize: 80,
-    fontFamily: "NotoSerif_400Regular",
-    marginBottom: 40,
-    lineHeight: 120,
-    color: "#fff"
-  },
-  input: {
-    width: "100%",
-    maxWidth: 280,
-    borderWidth: 3,
-    borderColor: "#8CB9FA",
-    backgroundColor: "#ffffff",
-    borderRadius: 10,
-    paddingVertical: 12,
-    paddingHorizontal: 16,
-    fontSize: 22,
-    fontFamily: "NotoSerif_400Regular",
-    textAlign: "center",
-    marginBottom: 20,
-    color: "#111",
-  },
-  inputCorrect: {
-    borderColor: "#22c55e",
-  },
-  inputIncorrect: {
-    borderColor: "#ef4444",
-  },
-  inputHint: {
-    fontSize: 14,
-    fontFamily: "NotoSerif_300Light_Italic",
-    color: "#8CB9FA",
-    marginTop: -14,
-    marginBottom: 8,
-  },
-  feedbackCorrect: {
-    fontSize: 20,
-    color: "#22c55e",
-    fontFamily: "NotoSerif_600SemiBold",
-    marginBottom: 20,
-  },
-  feedbackIncorrect: {
-    fontSize: 18,
-    color: "#ef4444",
-    fontFamily: "NotoSerif_600SemiBold",
-    marginBottom: 20,
-  },
-  button: {
-    backgroundColor: "#363DC2",
-    paddingHorizontal: 40,
-    paddingVertical: 14,
-    borderRadius: 10,
-  },
-  buttonExit: {
-    marginTop: 32,
-  },
-  buttonText: {
-    color: "#fff",
-    fontSize: 18,
-    fontFamily: "NotoSerif_600SemiBold",
-  },
-  exitButton: {
-    paddingVertical: 12,
-    paddingHorizontal: 24,
-    marginTop: 16,
-  },
-  exitButtonText: {
-    color: "#fff",
-    fontSize: 16,
-    fontFamily: "NotoSerif_400Regular",
-  },
-  doneTitle: {
-    fontSize: 36,
-    fontFamily: "NotoSerif_700Bold",
-    marginBottom: 20,
-    color: "#111",
-  },
-  doneStat: {
-    fontSize: 22,
-    fontFamily: "NotoSerif_400Regular",
-    color: "#4b5563",
-    marginBottom: 10,
-  },
-});
+function makeStyles(colors: ScriptColors) {
+  return StyleSheet.create({
+    outer: {
+      flex: 1,
+      backgroundColor: colors.background,
+    },
+    container: {
+      flex: 1,
+      alignItems: "center",
+      justifyContent: "center",
+      padding: 24,
+    },
+    header: {
+      position: "absolute",
+      top: 0,
+      left: 0,
+      right: 0,
+      flexDirection: "row",
+      justifyContent: "space-between",
+      paddingHorizontal: 24,
+    },
+    headerText: {
+      fontSize: 15,
+      fontFamily: "NotoSerif_600SemiBold",
+      color: colors.muted,
+    },
+    character: {
+      fontSize: 80,
+      fontFamily: "NotoSerif_400Regular",
+      marginBottom: 40,
+      lineHeight: 120,
+      color: colors.onPrimary,
+    },
+    input: {
+      width: "100%",
+      maxWidth: 280,
+      borderWidth: 3,
+      borderColor: colors.accent,
+      backgroundColor: "#ffffff",
+      borderRadius: 10,
+      paddingVertical: 12,
+      paddingHorizontal: 16,
+      fontSize: 22,
+      fontFamily: "NotoSerif_400Regular",
+      textAlign: "center",
+      marginBottom: 20,
+      color: "#111",
+    },
+    inputCorrect: {
+      borderColor: "#22c55e",
+    },
+    inputIncorrect: {
+      borderColor: "#ef4444",
+    },
+    inputHint: {
+      fontSize: 14,
+      fontFamily: "NotoSerif_300Light_Italic",
+      color: colors.accent,
+      marginTop: -14,
+      marginBottom: 8,
+    },
+    feedbackCorrect: {
+      fontSize: 20,
+      color: "#22c55e",
+      fontFamily: "NotoSerif_600SemiBold",
+      marginBottom: 20,
+    },
+    feedbackIncorrect: {
+      fontSize: 18,
+      color: "#ef4444",
+      fontFamily: "NotoSerif_600SemiBold",
+      marginBottom: 20,
+    },
+    button: {
+      backgroundColor: colors.primary,
+      paddingHorizontal: 40,
+      paddingVertical: 14,
+      borderRadius: 10,
+    },
+    buttonExit: {
+      marginTop: 32,
+    },
+    buttonText: {
+      color: colors.onPrimary,
+      fontSize: 18,
+      fontFamily: "NotoSerif_600SemiBold",
+    },
+    exitButton: {
+      paddingVertical: 12,
+      paddingHorizontal: 24,
+      marginTop: 16,
+    },
+    exitButtonText: {
+      color: colors.onPrimary,
+      fontSize: 16,
+      fontFamily: "NotoSerif_400Regular",
+    },
+    doneTitle: {
+      fontSize: 36,
+      fontFamily: "NotoSerif_700Bold",
+      marginBottom: 20,
+      color: colors.onPrimary,
+    },
+    doneStat: {
+      fontSize: 22,
+      fontFamily: "NotoSerif_400Regular",
+      color: colors.accent,
+      marginBottom: 10,
+    },
+  });
+}

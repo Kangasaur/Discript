@@ -1,0 +1,15 @@
+[
+  {
+    "id": "cyrillic",
+    "name": "Cyrillic",
+    "icon": "Яя",
+    "colors": {
+      "background": "#747ACC",
+      "primary": "#363DC2",
+      "accent": "#8CB9FA",
+      "accentPressed": "#60A0FC",
+      "muted": "#9EBBE8",
+      "onPrimary": "#ffffff"
+    }
+  }
+]

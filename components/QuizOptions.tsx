@@ -1,6 +1,7 @@
-import { useRef, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
-import type { Lesson } from "@/types/data";
+import { useScriptTheme } from "@/contexts/ScriptTheme";
+import type { Lesson, ScriptColors } from "@/types/data";
 
 const DEFAULT_COUNT = 20;
 const MIN_COUNT = 1;
@@ -15,6 +16,9 @@ interface Props {
 }
 
 export default function QuizOptions({ lesson, onStart, onBack }: Props) {
+  const { colors } = useScriptTheme();
+  const styles = useMemo(() => makeStyles(colors), [colors]);
+
   const [count, setCount] = useState(DEFAULT_COUNT);
   // Text field value kept as string so the user can clear and retype freely
   const [inputValue, setInputValue] = useState(String(DEFAULT_COUNT));
@@ -114,87 +118,89 @@ export default function QuizOptions({ lesson, onStart, onBack }: Props) {
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    alignItems: "center",
-    justifyContent: "center",
-    padding: 24,
-    backgroundColor: "#747ACC",
-  },
-  title: {
-    fontSize: 28,
-    fontFamily: "NotoSerif_700Bold",
-    color: "#fff",
-    marginBottom: 6,
-  },
-  subtitle: {
-    fontSize: 15,
-    fontFamily: "NotoSerif_300Light",
-    color: "#fff",
-    marginBottom: 48,
-  },
-  optionBlock: {
-    alignItems: "center",
-    marginBottom: 48,
-  },
-  optionLabel: {
-    fontSize: 16,
-    fontFamily: "NotoSerif_600SemiBold",
-    color: "#8CB9FA",
-    fontWeight: "600",
-    marginBottom: 16,
-    textTransform: "uppercase",
-    letterSpacing: 0.8,
-  },
-  stepper: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 20,
-  },
-  stepButton: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    backgroundColor: "#8CB9FA",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  stepButtonPressed: {
-    backgroundColor: "#60A0FC",
-  },
-  stepButtonText: {
-    fontSize: 24,
-    color: "#fff",
-    lineHeight: 28,
-  },
-  stepValue: {
-    fontSize: 40,
-    fontFamily: "NotoSerif_700Bold",
-    color: "#fff",
-    minWidth: 70,
-    maxWidth: 110,
-    textAlign: "center",
-  },
-  startButton: {
-    backgroundColor: "#363DC2",
-    paddingHorizontal: 48,
-    paddingVertical: 16,
-    borderRadius: 12,
-    marginBottom: 16,
-  },
-  startButtonText: {
-    color: "#fff",
-    fontSize: 18,
-    fontFamily: "NotoSerif_700Bold",
-  },
-  backButton: {
-    paddingVertical: 12,
-    paddingHorizontal: 24,
-  },
-  backButtonText: {
-    color: "#fff",
-    fontSize: 16,
-    fontFamily: "NotoSerif_400Regular",
-  },
-});
+function makeStyles(colors: ScriptColors) {
+  return StyleSheet.create({
+    container: {
+      flex: 1,
+      alignItems: "center",
+      justifyContent: "center",
+      padding: 24,
+      backgroundColor: colors.background,
+    },
+    title: {
+      fontSize: 28,
+      fontFamily: "NotoSerif_700Bold",
+      color: colors.onPrimary,
+      marginBottom: 6,
+    },
+    subtitle: {
+      fontSize: 15,
+      fontFamily: "NotoSerif_300Light",
+      color: colors.onPrimary,
+      marginBottom: 48,
+    },
+    optionBlock: {
+      alignItems: "center",
+      marginBottom: 48,
+    },
+    optionLabel: {
+      fontSize: 16,
+      fontFamily: "NotoSerif_600SemiBold",
+      color: colors.accent,
+      fontWeight: "600",
+      marginBottom: 16,
+      textTransform: "uppercase",
+      letterSpacing: 0.8,
+    },
+    stepper: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: 20,
+    },
+    stepButton: {
+      width: 48,
+      height: 48,
+      borderRadius: 24,
+      backgroundColor: colors.accent,
+      alignItems: "center",
+      justifyContent: "center",
+    },
+    stepButtonPressed: {
+      backgroundColor: colors.accentPressed,
+    },
+    stepButtonText: {
+      fontSize: 24,
+      color: colors.onPrimary,
+      lineHeight: 28,
+    },
+    stepValue: {
+      fontSize: 40,
+      fontFamily: "NotoSerif_700Bold",
+      color: colors.onPrimary,
+      minWidth: 70,
+      maxWidth: 110,
+      textAlign: "center",
+    },
+    startButton: {
+      backgroundColor: colors.primary,
+      paddingHorizontal: 48,
+      paddingVertical: 16,
+      borderRadius: 12,
+      marginBottom: 16,
+    },
+    startButtonText: {
+      color: colors.onPrimary,
+      fontSize: 18,
+      fontFamily: "NotoSerif_700Bold",
+    },
+    backButton: {
+      paddingVertical: 12,
+      paddingHorizontal: 24,
+    },
+    backButtonText: {
+      color: colors.onPrimary,
+      fontSize: 16,
+      fontFamily: "NotoSerif_400Regular",
+    },
+  });
+}

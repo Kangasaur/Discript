@@ -4,6 +4,22 @@ export interface ScriptMeta {
   lessons: string[];
 }
 
+export interface ScriptColors {
+  background: string;
+  primary: string;
+  accent: string;
+  accentPressed: string;
+  muted: string;
+  onPrimary: string;
+}
+
+export interface Script {
+  id: string;
+  name: string;
+  icon: string;
+  colors: ScriptColors;
+}
+
 export type LessonType = "standard" | (string & {});
 
 export interface Entry {

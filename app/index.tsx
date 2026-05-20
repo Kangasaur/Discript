@@ -1,8 +1,9 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { StyleSheet, Text, View } from "react-native";
 import LessonButton from "@/components/LessonButton";
 import Quiz from "@/components/Quiz";
 import QuizOptions from "@/components/QuizOptions";
+import { ScriptThemeProvider, useScriptTheme } from "@/contexts/ScriptTheme";
 import type { Lesson } from "@/types/data";
 import cyrillicMeta from "@/data/cyrillic/meta.json";
 
@@ -22,6 +23,17 @@ const LESSON_LOADERS: Record<string, () => Promise<{ default: Lesson }>> = {
 type Screen = "menu" | "options" | "quiz";
 
 export default function Index() {
+  return (
+    <ScriptThemeProvider scriptId="cyrillic">
+      <IndexContent />
+    </ScriptThemeProvider>
+  );
+}
+
+function IndexContent() {
+  const { colors } = useScriptTheme();
+  const styles = useMemo(() => makeStyles(colors), [colors]);
+
   const [screen, setScreen] = useState<Screen>("menu");
   const [activeLesson, setActiveLesson] = useState<Lesson | null>(null);
   const [questionCount, setQuestionCount] = useState(20);
@@ -82,18 +94,20 @@ export default function Index() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    alignItems: "center",
-    justifyContent: "center",
-    padding: 24,
-    backgroundColor: "#747ACC",
-  },
-  title: {
-    fontSize: 34,
-    fontFamily: "NotoSerif_700Bold",
-    marginBottom: 32,
-    color: "#fff",
-  },
-});
+function makeStyles(colors: ReturnType<typeof useScriptTheme>["colors"]) {
+  return StyleSheet.create({
+    container: {
+      flex: 1,
+      alignItems: "center",
+      justifyContent: "center",
+      padding: 24,
+      backgroundColor: colors.background,
+    },
+    title: {
+      fontSize: 34,
+      fontFamily: "NotoSerif_700Bold",
+      marginBottom: 32,
+      color: colors.onPrimary,
+    },
+  });
+}
