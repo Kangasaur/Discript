@@ -103,7 +103,6 @@ export default function Quiz({ lesson, questionCount, onExit }: Props) {
     if (isCorrect) {
       setScore((s) => s + 1);
       setStatus("correct");
-      setTimeout(() => advance(index), 800);
     } else {
       setStatus("incorrect");
     }
@@ -170,7 +169,7 @@ export default function Quiz({ lesson, questionCount, onExit }: Props) {
           <Text style={styles.buttonText}>Submit</Text>
         </Pressable>
       )}
-      {status === "incorrect" && (
+      {(status === "incorrect" || status === "correct") && (
         <Pressable style={styles.button} onPress={() => advance(index)}>
           <Text style={styles.buttonText}>Next</Text>
         </Pressable>
