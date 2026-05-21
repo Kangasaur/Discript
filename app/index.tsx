@@ -25,7 +25,7 @@ export default function Index() {
       <Text style={styles.title}>{theme.name}</Text>
       <Text style={styles.tagline}>{theme.tagline}</Text>
 
-      <Text style={styles.pickerLabel}>What would you like to learn?</Text>
+      <Text style={styles.pickerLabel}>What are you learning?</Text>
       <View style={styles.pickerList}>
         {scripts.map((script) => (
           <ScriptCard key={script.id} script={script} onPress={openScript} />

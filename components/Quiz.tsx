@@ -7,6 +7,8 @@ import {
   TextInput,
   Pressable,
   StyleSheet,
+  TouchableWithoutFeedback,
+  Keyboard,
 } from "react-native";
 import { useScriptTheme } from "@/contexts/ScriptTheme";
 import type { Entry, Lesson, ScriptColors } from "@/types/data";
@@ -128,57 +130,59 @@ export default function Quiz({ lesson, questionCount, onExit }: Props) {
       style={styles.outer}
       behavior={Platform.OS === "ios" ? "padding" : "height"}
     >
-      <View style={styles.container}>
-      <View style={styles.header}>
-        <Text style={styles.headerText}>
-          {index + 1} / {total}
-        </Text>
-        <Text style={styles.headerText}>{formatTime(elapsed)}</Text>
-      </View>
+      <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+        <View style={styles.container}>
+        <View style={styles.header}>
+          <Text style={styles.headerText}>
+            {index + 1} / {total}
+          </Text>
+          <Text style={styles.headerText}>{formatTime(elapsed)}</Text>
+        </View>
 
-      <Text style={styles.character}>{current.character}</Text>
-      <Text style={styles.inputHint}>What sound does this make?</Text>
-      <TextInput
-        ref={inputRef}
-        style={[
-          styles.input,
-          status === "correct" && styles.inputCorrect,
-          status === "incorrect" && styles.inputIncorrect,
-        ]}
-        value={input}
-        onChangeText={setInput}
-        onSubmitEditing={submit}
-        autoFocus
-        autoCapitalize="none"
-        autoCorrect={false}
-        editable={status === "answering"}
-        returnKeyType="done"
-      />
+        <Text style={styles.character}>{current.character}</Text>
+        <Text style={styles.inputHint}>What sound does this make?</Text>
+        <TextInput
+          ref={inputRef}
+          style={[
+            styles.input,
+            status === "correct" && styles.inputCorrect,
+            status === "incorrect" && styles.inputIncorrect,
+          ]}
+          value={input}
+          onChangeText={setInput}
+          onSubmitEditing={submit}
+          autoFocus
+          autoCapitalize="none"
+          autoCorrect={false}
+          editable={status === "answering"}
+          returnKeyType="done"
+        />
 
-      {status === "correct" && (
-        <Text style={styles.feedbackCorrect}>Correct!</Text>
-      )}
-      {status === "incorrect" && (
-        <Text style={styles.feedbackIncorrect}>
-          Correct answer: {current.latin}
-        </Text>
-      )}
+        {status === "correct" && (
+          <Text style={styles.feedbackCorrect}>Correct!</Text>
+        )}
+        {status === "incorrect" && (
+          <Text style={styles.feedbackIncorrect}>
+            Correct answer: {current.latin}
+          </Text>
+        )}
 
-      {status === "answering" && (
-        <Pressable style={styles.button} onPress={submit}>
-          <Text style={styles.buttonText}>Submit</Text>
+        {status === "answering" && (
+          <Pressable style={styles.button} onPress={submit}>
+            <Text style={styles.buttonText}>Submit</Text>
+          </Pressable>
+        )}
+        {(status === "incorrect" || status === "correct") && (
+          <Pressable style={styles.button} onPress={() => advance(index)}>
+            <Text style={styles.buttonText}>Next</Text>
+          </Pressable>
+        )}
+
+        <Pressable style={styles.exitButton} onPress={onExit}>
+          <Text style={styles.exitButtonText}>Exit</Text>
         </Pressable>
-      )}
-      {(status === "incorrect" || status === "correct") && (
-        <Pressable style={styles.button} onPress={() => advance(index)}>
-          <Text style={styles.buttonText}>Next</Text>
-        </Pressable>
-      )}
-
-      <Pressable style={styles.exitButton} onPress={onExit}>
-        <Text style={styles.exitButtonText}>Exit</Text>
-      </Pressable>
-      </View>
+        </View>
+      </TouchableWithoutFeedback>
     </KeyboardAvoidingView>
   );
 }
@@ -197,7 +201,7 @@ function makeStyles(colors: ScriptColors) {
     },
     header: {
       position: "absolute",
-      top: 0,
+      top: 10,
       left: 0,
       right: 0,
       flexDirection: "row",
