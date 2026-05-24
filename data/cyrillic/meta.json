@@ -1,5 +1,10 @@
 {
   "id": "cyrillic",
   "name": "Cyrillic",
-  "lessons": ["lesson-01"]
+  "lessons": [
+    {
+      "id": "lesson-01",
+      "name": "Russian"
+    }
+  ]
 }

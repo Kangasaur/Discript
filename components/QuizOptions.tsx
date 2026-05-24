@@ -2,6 +2,7 @@ import { useMemo, useRef, useState } from "react";
 import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 import { useScriptTheme } from "@/contexts/ScriptTheme";
 import type { Lesson, ScriptColors } from "@/types/data";
+import CharacterRefButton from "@/components/CharacterRefButton";
 
 const DEFAULT_COUNT = 20;
 const MIN_COUNT = 1;
@@ -114,6 +115,9 @@ export default function QuizOptions({ lesson, onStart, onBack }: Props) {
       <Pressable style={styles.backButton} onPress={onBack}>
         <Text style={styles.backButtonText}>Back</Text>
       </Pressable>
+      {lesson.entries.map((entry) => (
+        <CharacterRefButton key={entry.character} entry={entry} />
+      ))}
     </View>
   );
 }

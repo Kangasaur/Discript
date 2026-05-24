@@ -7,13 +7,6 @@ import { useScriptTheme } from "@/contexts/ScriptTheme";
 import type { Lesson, ScriptColors } from "@/types/data";
 import cyrillicMeta from "@/data/cyrillic/meta.json";
 
-function formatLessonLabel(lessonId: string): string {
-  // "lesson-01" -> "Lesson 1"
-  const match = lessonId.match(/lesson-(\d+)/);
-  if (match) return `Lesson ${parseInt(match[1], 10)}`;
-  return lessonId;
-}
-
 // Metro requires statically-analyzable import paths, so all lesson files
 // must be enumerated explicitly here.
 const LESSON_LOADERS: Record<string, () => Promise<{ default: Lesson }>> = {
@@ -76,10 +69,10 @@ export default function CyrillicIndex() {
       <Text style={styles.title}>{cyrillicMeta.name}</Text>
       {cyrillicMeta.lessons.map((lessonId) => (
         <LessonButton
-          key={lessonId}
-          label={formatLessonLabel(lessonId)}
-          loading={loadingLesson === lessonId}
-          onPress={() => openOptions(cyrillicMeta.id, lessonId)}
+          key={lessonId.id}
+          label={lessonId.name}
+          loading={loadingLesson === lessonId.id}
+          onPress={() => openOptions(cyrillicMeta.id, lessonId.id)}
         />
       ))}
     </View>
