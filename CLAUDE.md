@@ -37,4 +37,10 @@ Key installed but not yet wired up: `@react-navigation/bottom-tabs`, `expo-hapti
 Before any modifications that change the architecture of the project or implement a new feature:
 - ask clarifying questions to gain a clear idea of what is expected
 - create a plan for implementation
-- suggest possible tests for validation
+
+### Test writing
+Before writing unit tests for a specific feature:
+- analyze the feature's implementation: how it's accessed, how it runs, what functions are called
+- analyze coverage of user-provided cases against possible edge cases in implementation
+  - User-provided cases are the minimum and must be implemented, but add other tests as necessary for good coverage
+Test files should be located in the `@/tests/` folder.
