@@ -1,50 +1,78 @@
-# Welcome to your Expo app 👋
+# Discript
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+Discript is a cross-platform app for learning non-Latin scripts. Each script is broken into ordered lessons, and each lesson is backed by a customizable quiz over its characters. The first supported script is Cyrillic; the data model is script-agnostic so additional scripts can be added without code changes.
 
-## Get started
+## How it works
 
-1. Install dependencies
+A **script** (e.g. Cyrillic) contains an ordered list of **lessons**. A lesson holds **entries** — one per character — pairing the glyph with its Latin transcription and, optionally, a reference note and an audio file. Quizzes are generated from lesson entries; quiz options (direction, length, etc.) are configurable per session.
 
-   ```bash
-   npm install
-   ```
+Per-script theming is applied at the route layout level, so navigating into a script swaps the color palette globally for that subtree.
 
-2. Start the app
+## Stack
 
-   ```bash
-   npx expo start
-   ```
+- **Expo SDK 54** / **React Native 0.81** / **React 19**, targeting iOS, Android, and web
+- **expo-router 6** with file-based routing and typed routes
+- **TypeScript** in strict mode
+- **expo-audio** for character pronunciation playback
+- **@react-navigation** (native, drawer, bottom-tabs, elements) wired through expo-router
 
-In the output, you'll find options to open the app in a
+## Project layout
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
-
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
-
-## Get a fresh project
-
-When you're ready, run:
-
-```bash
-npm run reset-project
+```
+app/                  expo-router route tree
+  _layout.tsx         root navigator
+  index.tsx           script picker (home)
+  cyrillic/           per-script subtree (layout + lessons)
+components/           CharacterRefButton, LessonButton, Quiz, QuizOptions
+contexts/
+  ScriptTheme.tsx     script-scoped color context
+data/
+  scripts.json        registry of available scripts + theme colors
+  <script-id>/
+    meta.json         script metadata, lesson id list
+    lesson-XX.json    lesson contents (entries)
+    audio.ts          static audio asset map
+types/data.ts         Script / Lesson / Entry interfaces
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+The `@/` path alias maps to the repo root (e.g. `@/components/Quiz`).
 
-## Learn more
+## Data model
 
-To learn more about developing your project with Expo, look at the following resources:
+Defined in `types/data.ts`:
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+- `Script` — id, display name, icon glyph, and a `ScriptColors` palette
+- `ScriptMeta` — script id, name, and ordered list of lesson ids
+- `Lesson` — id, title, `lessonType` (currently `"standard"`), and an array of `Entry`
+- `Entry` — `character`, `latin`, optional `reference` and `audioFile`
 
-## Join the community
+Lessons are loaded lazily via dynamic `import()` so only the active lesson is held in memory. `ScriptThemeProvider` reads from `data/scripts.json` and exposes the active script's palette via the `useScriptTheme()` hook.
 
-Join our community of developers creating universal apps.
+## Getting started
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+```bash
+npm install
+npm start            # Expo dev server
+npm run ios          # iOS simulator
+npm run android      # Android emulator
+npm run web          # web build
+npm run lint         # expo lint (ESLint)
+```
+
+No test runner is configured yet.
+
+## Adding a script
+
+1. Add an entry to `data/scripts.json` with an id, display name, icon glyph, and color palette.
+2. Create `data/<script-id>/meta.json` listing the lesson ids in order.
+3. Add `data/<script-id>/lesson-XX.json` files matching the `Lesson` shape.
+4. Create `app/<script-id>/` with a `_layout.tsx` that wraps children in `ScriptThemeProvider`, plus the screens for the script.
+
+## Roadmap
+
+- **Reference sheets** for each lesson, including high-quality audio for each character, pronunciation guides, and stroke diagrams for writing.
+- **Explore mode**: a digital keyboard for each character that plays the sound and shows the romanization when pressed.
+- **Local persistence** of user data — lesson completion and fastest quiz scores stored on-device.
+- **Lesson partitioning**: when a user takes a quiz in a lesson they haven't learned yet, the lesson is split into discrete "sublessons" of up to 5 characters each.
+- **Writing mode**: capture handwriting input and grade it against the target character using online HTR.
+- **Optional accounts** for securely syncing user data between devices.
