@@ -3,10 +3,8 @@ import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 import { useScriptTheme } from "@/contexts/ScriptTheme";
 import type { Lesson, ScriptColors } from "@/types/data";
 import CharacterRefButton from "@/components/CharacterRefButton";
+import { DEFAULT_COUNT, clamp } from "@/utils/quizOptions";
 
-const DEFAULT_COUNT = 20;
-const MIN_COUNT = 1;
-const MAX_COUNT = 999;
 const HOLD_DELAY = 200;
 const HOLD_INTERVAL = 80;
 
@@ -25,10 +23,6 @@ export default function QuizOptions({ lesson, onStart, onBack }: Props) {
   const [inputValue, setInputValue] = useState(String(DEFAULT_COUNT));
   const holdTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
   const holdInterval = useRef<ReturnType<typeof setInterval> | null>(null);
-
-  function clamp(n: number) {
-    return Math.min(MAX_COUNT, Math.max(MIN_COUNT, n));
-  }
 
   function applyDelta(delta: number) {
     setCount((c) => {
