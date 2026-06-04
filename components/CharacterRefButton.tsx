@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { ActivityIndicator, Pressable, StyleSheet, Text } from "react-native";
+import { Pressable, StyleSheet, Text } from "react-native";
 import { useScriptTheme } from "@/contexts/ScriptTheme";
 import { useAudioPlayer } from "expo-audio";
 import type { Entry, ScriptColors } from "@/types/data";
@@ -14,10 +14,12 @@ export default function CharacterRefButton({ entry, onPress }: Props) {
   const { colors } = useScriptTheme();
   const styles = useMemo(() => makeStyles(colors), [colors]);
 
-  const player = entry.audioFile ? useAudioPlayer(cyrillicAudio[entry.audioFile]) : null;
+  const player = useAudioPlayer(
+    entry.audioFile ? cyrillicAudio[entry.audioFile] : null,
+  );
 
   function playSound() {
-    if (player) {
+    if (entry.audioFile) {
       player.seekTo(0)
       player.play()
     }
@@ -32,6 +34,7 @@ export default function CharacterRefButton({ entry, onPress }: Props) {
       onPress={onPress || playSound}
     >
         <Text style={styles.label}>{ entry.reference || entry.character }</Text>
+        <Text style={styles.labelLatin}>{ entry.latin }</Text>
     </Pressable>
   );
 }
@@ -39,12 +42,15 @@ export default function CharacterRefButton({ entry, onPress }: Props) {
 function makeStyles(colors: ScriptColors) {
   return StyleSheet.create({
     button: {
-      backgroundColor: colors.primary,
+      backgroundColor: colors.background,
+      borderColor: colors.primary,
+      borderWidth: 4,
       paddingHorizontal: 32,
       paddingVertical: 16,
       borderRadius: 12,
       marginVertical: 8,
-      minWidth: 220,
+      minWidth: 120,
+      maxWidth: 120,
       alignItems: "center",
     },
     buttonPressed: {
@@ -55,8 +61,14 @@ function makeStyles(colors: ScriptColors) {
     },
     label: {
       color: colors.onPrimary,
-      fontSize: 18,
+      fontSize: 20,
       fontFamily: "NotoSerif_700Bold",
     },
+    labelLatin: {
+      color: colors.onPrimary,
+      fontSize: 16,
+      paddingTop: 5,
+      fontFamily: "NotoSerif_400Regular_Italic",
+    }
   });
 }
