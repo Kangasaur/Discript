@@ -1,9 +1,10 @@
 import { useMemo, useRef, useState } from "react";
 import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
+import Modal from "react-native-modal";
 import { useScriptTheme } from "@/contexts/ScriptTheme";
 import type { Lesson, ScriptColors } from "@/types/data";
-import CharacterRefButton from "@/components/CharacterRefButton";
 import { DEFAULT_COUNT, clamp } from "@/utils/quizOptions";
+import CharacterReferenceSheet from "./CharacterReferenceSheet";
 
 const HOLD_DELAY = 200;
 const HOLD_INTERVAL = 80;
@@ -19,6 +20,7 @@ export default function QuizOptions({ lesson, onStart, onBack }: Props) {
   const styles = useMemo(() => makeStyles(colors), [colors]);
 
   const [count, setCount] = useState(DEFAULT_COUNT);
+  const [refVisible, setRefVisible] = useState(false);
   // Text field value kept as string so the user can clear and retype freely
   const [inputValue, setInputValue] = useState(String(DEFAULT_COUNT));
   const holdTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -59,6 +61,26 @@ export default function QuizOptions({ lesson, onStart, onBack }: Props) {
 
   return (
     <View style={styles.container}>
+      <Modal
+        isVisible={refVisible}
+        backdropOpacity={0.8}
+        onBackdropPress={() => setRefVisible(false)}
+        style={{marginHorizontal: 0, justifyContent: "flex-start"}}
+        >
+        <View style={styles.modalHeader}>
+          <Pressable style={styles.backButton} onPress={() => {setRefVisible(false)}}>
+            <Text style={styles.backButtonText}>Close</Text>
+          </Pressable>
+        </View>
+        <View style={styles.modalBody}>
+          <CharacterReferenceSheet lesson={lesson}/>
+        </View>
+      </Modal>
+      <View style={styles.footer}>
+        <Pressable style={styles.startButton} onPress={() => {setRefVisible(true);}}>
+          <Text style={styles.backButtonText}>View Reference</Text>
+        </Pressable>
+      </View>
       <Text style={styles.title}>{lesson.title}</Text>
       <Text style={styles.subtitle}>{lesson.entries.length} characters</Text>
 
@@ -109,9 +131,6 @@ export default function QuizOptions({ lesson, onStart, onBack }: Props) {
       <Pressable style={styles.backButton} onPress={onBack}>
         <Text style={styles.backButtonText}>Back</Text>
       </Pressable>
-      {lesson.entries.map((entry) => (
-        <CharacterRefButton key={entry.character} entry={entry} />
-      ))}
     </View>
   );
 }
@@ -200,5 +219,26 @@ function makeStyles(colors: ScriptColors) {
       fontSize: 16,
       fontFamily: "NotoSerif_400Regular",
     },
+    modalBackground: {
+      backgroundColor: "#000000c0",
+      flex: 1,
+    },
+    modalHeader: {
+      flexDirection:"row-reverse",
+      paddingTop: 20,
+    },
+    modalBody: {
+      maxWidth: 900,
+      justifyContent: "center",
+      alignSelf: "center",
+      paddingBottom: 20,
+    },
+    footer: {
+      position: "absolute",
+      bottom: 10,
+      left: 0,
+      right: 0,
+      alignItems: "center",
+    }
   });
 }
