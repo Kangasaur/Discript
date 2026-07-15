@@ -6,7 +6,6 @@ import QuizOptions from "@/components/QuizOptions";
 import { useScriptTheme } from "@/contexts/ScriptTheme";
 import type { Lesson, ScriptColors } from "@/types/data";
 import cyrillicMeta from "@/data/cyrillic/meta.json";
-import CharacterReferenceSheet from "@/components/CharacterReferenceSheet";
 
 // Metro requires statically-analyzable import paths, so all lesson files
 // must be enumerated explicitly here.

@@ -5,7 +5,7 @@ import {
     StyleSheet
 } from "react-native";
 import appTheme from "@/data/app.json";
-import { AppTheme, Lesson, Entry } from "@/types/data";
+import { AppTheme, Lesson, } from "@/types/data";
 import CharacterRefButton from "@/components/CharacterRefButton";
 
 const theme = appTheme as AppTheme;
