@@ -39,7 +39,7 @@ describe("CharacterRefButton", () => {
   });
 
   it("plays the audio from the start when pressed", () => {
-    renderButton({ character: "а", latin: "a", audioFile: "lesson-01/А" });
+    renderButton({ character: "а", latin: "a", audioFile: "lesson-01/a" });
     fireEvent.click(screen.getByText("а"));
     expect(player.seekTo).toHaveBeenCalledWith(0);
     expect(player.play).toHaveBeenCalledTimes(1);
@@ -47,7 +47,7 @@ describe("CharacterRefButton", () => {
 
   it("invokes a provided onPress instead of playing audio", () => {
     const onPress = vi.fn();
-    renderButton({ character: "а", latin: "a", audioFile: "lesson-01/А" }, onPress);
+    renderButton({ character: "а", latin: "a", audioFile: "lesson-01/a" }, onPress);
     fireEvent.click(screen.getByText("а"));
     expect(onPress).toHaveBeenCalledTimes(1);
     expect(player.play).not.toHaveBeenCalled();
