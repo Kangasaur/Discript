@@ -31,7 +31,7 @@
     { "character": "ш", "latin": "sh", "reference": "Шш", "audioFile": "lesson-01/sh" },
     { "character": "щ", "latin": "shch", "reference": "Щщ", "audioFile": "lesson-01/shch" },
     { "character": "ъ", "latin": "hard sign", "reference": "Ъъ", "audioFile": "lesson-01/hard_sign" },
-    { "character": "ы", "latin": "y", "reference": "Ыы", "audioFile": "lesson-01/y" },
+    { "character": "ы", "latin": "y'", "reference": "Ыы", "audioFile": "lesson-01/y" },
     { "character": "ь", "latin": "soft sign", "reference": "Ьь", "audioFile": "lesson-01/soft_sign" },
     { "character": "э", "latin": "e", "reference": "Ээ", "audioFile": "lesson-01/e" },
     { "character": "ю", "latin": "yu", "reference": "Юю", "audioFile": "lesson-01/yu" },
