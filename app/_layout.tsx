@@ -117,6 +117,7 @@ export default function RootLayout() {
                         }
                     }}
                 />
+                <Drawer.Screen name="dev" options={{headerShown: false}} />
                 {scripts.map((script) => (
                     <Drawer.Screen
                         key={script.id}

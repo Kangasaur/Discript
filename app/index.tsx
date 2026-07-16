@@ -3,6 +3,7 @@ import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { getAllScripts } from "@/contexts/ScriptTheme";
 import appTheme from "@/data/app.json";
 import type { AppTheme, Script } from "@/types/data";
+import DevMenuButton from "@/components/DevMenuButton";
 
 // TODO: read last-opened script id from local storage and `router.replace`
 // to that route before rendering the landing UI.
@@ -31,6 +32,7 @@ export default function Index() {
           <ScriptCard key={script.id} script={script} onPress={openScript} />
         ))}
       </View>
+      <DevMenuButton style={{ position: "absolute", bottom: 24, right: 16, marginTop: 0 }} />
     </ScrollView>
   );
 }
