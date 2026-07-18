@@ -1,7 +1,12 @@
 export interface ScriptMeta {
   id: string;
   name: string;
-  lessons: string[];
+  lessons: LessonRef[];
+}
+
+export interface LessonRef {
+  id: string;
+  name: string;
 }
 
 export interface ScriptColors {
