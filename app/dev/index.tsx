@@ -8,6 +8,11 @@ const TOOLS = [
     title: "Handwriting data collection",
     description: "Capture labelled ink samples for the writing-quiz recognizer, then export them.",
   },
+  {
+    href: "/dev/migrate",
+    title: "Sample schema migration",
+    description: "Upgrade locally stored v1 handwriting samples to the v2 (resampled) feature format.",
+},
 ] as const;
 
 export default function DevIndexScreen() {

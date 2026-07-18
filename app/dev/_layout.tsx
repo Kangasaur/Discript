@@ -16,6 +16,7 @@ export default function DevLayout() {
     >
       <Stack.Screen name="index" options={{ title: "Dev Tools" }} />
       <Stack.Screen name="handwriting" options={{ title: "Handwriting Data" }} />
+      <Stack.Screen name="migrate" options={{ title: "Data Migration" }} />
     </Stack>
   );
 }
