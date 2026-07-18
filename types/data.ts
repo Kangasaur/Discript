@@ -37,6 +37,8 @@ export type LessonType = "standard" | (string & {});
 
 export interface Entry {
   character: string;
+  upper?: string;
+  key: string;
   latin: string;
   reference?: string;
   audioFile?: string;
