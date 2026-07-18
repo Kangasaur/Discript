@@ -53,8 +53,8 @@ export interface SampleLabel {
  * One collected handwriting sample.
  *
  * `ink` keeps the untouched point sequence (so we can refit to Bézier curves
- * later, per Carbune et al. 2020 §"Bézier curves"), `features` is the simple
- * point-sequence representation used as the paper's raw-touch-point baseline.
+ * later), `features` is the paper's raw-touch-point baseline: normalize →
+ * equidistant resample (δ) → per-point deltas.
  */
 export interface HandwritingSample {
   id: string;
@@ -74,8 +74,20 @@ export interface HandwritingSample {
       scale: number;
       center: { x: number; y: number };
     };
+    resampling: {
+      method: "equidistant-linear";
+      /** spacing in normalized units, applied after normalization */
+      delta: number;
+    };
     points: number[][];
   };
-  stats: { strokeCount: number; pointCount: number; durationMs: number };
+  stats: {
+    strokeCount: number;
+    /** captured touch points */
+    pointCount: number;
+    /** points after resampling (== features.points.length) */
+    featurePointCount: number;
+    durationMs: number;
+  };
   device: { os: string; osVersion: string };
 }

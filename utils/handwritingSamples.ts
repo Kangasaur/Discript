@@ -4,14 +4,16 @@ import {
   FEATURE_DIMS,
   FEATURE_FORMAT,
   RAW_INK_FORMAT,
+  RESAMPLE_DELTA,
   countPoints,
   inkDurationMs,
   normalizeStrokes,
+  resampleStrokes,
   serializeStrokes,
   toPointDeltaSequence,
 } from "./ink";
 
-export const EXPORT_SCHEMA_VERSION = 1;
+export const EXPORT_SCHEMA_VERSION = 2;
 const SEP = "--";
 
 type LabelKeyParts = Pick<SampleLabel, "script" | "key" | "case">;
@@ -54,6 +56,27 @@ export function countsByLabel(ids: string[]): Record<string, number> {
   return counts;
 }
 
+/**
+ * The v2 feature pipeline: normalize (centre + bbox height -> 1) ->
+ * equidistant resample -> delta encode. Shared by buildSample and the
+ * schema migration so both always agree.
+ */
+export function buildFeatures(strokes: InkStroke[]): HandwritingSample["features"] {
+  const normalized = normalizeStrokes(strokes);
+  const points = toPointDeltaSequence(resampleStrokes(normalized.strokes, RESAMPLE_DELTA));
+  return {
+    format: FEATURE_FORMAT,
+    dims: FEATURE_DIMS,
+    normalization: {
+      reference: "ink-bbox-height",
+      scale: normalized.scale,
+      center: normalized.center,
+    },
+    resampling: { method: "equidistant-linear", delta: RESAMPLE_DELTA },
+    points,
+  };
+}
+
 export function buildSample(params: {
   label: SampleLabel;
   strokes: InkStroke[];
@@ -61,8 +84,7 @@ export function buildSample(params: {
   now?: number;
 }): HandwritingSample {
   const { label, strokes, canvas, now = Date.now() } = params;
-  const normalized = normalizeStrokes(strokes);
-
+  const features = buildFeatures(strokes);
   return {
     id: buildSampleId(label, now),
     label,
@@ -73,19 +95,11 @@ export function buildSample(params: {
       units: "canvas-px",
       strokes: serializeStrokes(strokes),
     },
-    features: {
-      format: FEATURE_FORMAT,
-      dims: FEATURE_DIMS,
-      normalization: {
-        reference: "ink-bbox-height",
-        scale: normalized.scale,
-        center: normalized.center,
-      },
-      points: toPointDeltaSequence(normalized.strokes),
-    },
+    features,
     stats: {
       strokeCount: strokes.length,
       pointCount: countPoints(strokes),
+      featurePointCount: features.points.length,
       durationMs: inkDurationMs(strokes),
     },
     device: { os: Platform.OS, osVersion: String(Platform.Version ?? "") },
@@ -113,8 +127,11 @@ export function buildExportBundle(samples: HandwritingSample[], now = Date.now()
     featureDims: FEATURE_DIMS,
     notes:
       "ink.strokes are raw canvas-pixel point sequences ([x, y, t_ms]) grouped per stroke. " +
-      "features.points is the flattened per-point representation [dx, dy, dt_ms, pen_up] after " +
-      "normalizing the ink so its bbox height spans 1.0 and its centre is the origin. " +
+      "features.points is the flattened per-point representation [dx, dy, dt_ms, pen_up] produced by: " +
+      "(1) normalizing the ink so its bbox height spans 1.0 and its centre is the origin, " +
+      `(2) equidistant linear resampling along each stroke with delta=${RESAMPLE_DELTA} ` +
+      "(a stroke of length 1 yields 20 points; timestamps interpolated linearly), " +
+      "(3) delta encoding, where pen_up marks the last point of a stroke. " +
       "Refit ink.strokes to Bezier curves when switching to the curve representation.",
     sampleCount: samples.length,
     counts: countsByLabel(samples.map((s) => s.id)),

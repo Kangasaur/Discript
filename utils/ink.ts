@@ -1,9 +1,12 @@
 import type { InkPoint, InkStroke, PointTriplet } from "@/types/handwriting";
 
 export const RAW_INK_FORMAT = "raw-touch-points/v1";
-export const FEATURE_FORMAT = "point-deltas/v1";
+// v2: normalized coords are now equidistantly resampled before delta encoding.
+export const FEATURE_FORMAT = "point-deltas/v2";
 /** Per-point feature vector of the paper's raw touch-point baseline. */
 export const FEATURE_DIMS = ["dx", "dy", "dt_ms", "pen_up"];
+/** Resampling spacing in normalized units (ink bbox height == 1). */
+export const RESAMPLE_DELTA = 0.05;
 
 export function clamp(value: number, min: number, max: number): number {
   return Math.min(Math.max(value, min), max);
@@ -89,6 +92,57 @@ export function normalizeStrokes(strokes: InkStroke[]): NormalizedInk {
   };
 }
 
+export function strokeLength(stroke: InkStroke): number {
+  let length = 0;
+  for (let i = 1; i < stroke.length; i++) {
+    length += Math.hypot(stroke[i].x - stroke[i - 1].x, stroke[i].y - stroke[i - 1].y);
+  }
+  return length;
+}
+/**
+ * Equidistant linear resampling along a stroke (Carbune et al. 2020 preprocessing).
+ *
+ * Must run AFTER normalizeStrokes, since `delta` is in normalized units.
+ * Point count is `max(2, round(L / delta))`, sampled with linspace over arc
+ * length — so a line of length 1 with delta = 0.05 yields 20 points and both
+ * endpoints are preserved (spacing L/(n-1), i.e. delta to within one interval).
+ * For strict delta-stepping instead, use positions 0, δ, 2δ, … and drop the
+ * trailing endpoint. Timestamps are interpolated linearly along each segment.
+ */
+export function resampleStroke(stroke: InkStroke, delta = RESAMPLE_DELTA): InkStroke {
+  if (stroke.length <= 1) return stroke.slice();
+  const cumulative: number[] = [0];
+  for (let i = 1; i < stroke.length; i++) {
+    cumulative.push(
+      cumulative[i - 1] + Math.hypot(stroke[i].x - stroke[i - 1].x, stroke[i].y - stroke[i - 1].y),
+    );
+  }
+  const total = cumulative[cumulative.length - 1];
+  if (total <= 1e-9) return [stroke[0]]; // dot / tap
+  const count = Math.max(2, Math.round(total / delta));
+  const step = total / (count - 1);
+  const resampled: InkStroke = [stroke[0]];
+  let segment = 1;
+  for (let i = 1; i < count - 1; i++) {
+    const target = i * step;
+    while (segment < cumulative.length - 1 && cumulative[segment] < target) segment++;
+    const from = stroke[segment - 1];
+    const to = stroke[segment];
+    const segmentLength = cumulative[segment] - cumulative[segment - 1];
+    const ratio = segmentLength > 1e-12 ? (target - cumulative[segment - 1]) / segmentLength : 0;
+    resampled.push({
+      x: from.x + (to.x - from.x) * ratio,
+      y: from.y + (to.y - from.y) * ratio,
+      t: from.t + (to.t - from.t) * ratio,
+    });
+  }
+  resampled.push(stroke[stroke.length - 1]);
+  return resampled;
+}
+export function resampleStrokes(strokes: InkStroke[], delta = RESAMPLE_DELTA): InkStroke[] {
+  return strokes.map((stroke) => resampleStroke(stroke, delta));
+}
+
 /**
  * The "simple" point-sequence input representation: the whole ink is one
  * sequence, each point contributes [dx, dy, dt, pen_up], where pen_up marks the
@@ -97,14 +151,13 @@ export function normalizeStrokes(strokes: InkStroke[]): NormalizedInk {
 export function toPointDeltaSequence(strokes: InkStroke[], precision = 4): number[][] {
   const out: number[][] = [];
   let prev: InkPoint | null = null;
-
   for (const stroke of strokes) {
     for (let i = 0; i < stroke.length; i++) {
       const p = stroke[i];
       const dx = prev ? p.x - prev.x : 0;
       const dy = prev ? p.y - prev.y : 0;
       const dt = prev ? p.t - prev.t : 0;
-      out.push([round(dx, precision), round(dy, precision), Math.round(dt), i === stroke.length - 1 ? 1 : 0]);
+      out.push([round(dx, precision), round(dy, precision), round(dt, 2), i === stroke.length - 1 ? 1 : 0]);
       prev = p;
     }
   }
