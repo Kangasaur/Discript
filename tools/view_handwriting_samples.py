@@ -68,7 +68,8 @@ def feature_strokes(sample: dict) -> list[list[tuple[float, float, float]]]:
 # Drawing
 # ---------------------------------------------------------------------------
 def _draw_strokes(ax, strokes) -> None:
-    t_max = max((p[2] for s in strokes for p in s), default=0.0)
+    last_stroke = strokes[-1] if strokes else None
+    t_max = last_stroke[-1][2] if last_stroke else 0.0
     norm = Normalize(vmin=0.0, vmax=max(t_max, 1e-9))
     for i, stroke in enumerate(strokes):
         xs = [p[0] for p in stroke]

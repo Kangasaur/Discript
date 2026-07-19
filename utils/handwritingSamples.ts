@@ -13,7 +13,7 @@ import {
   toPointDeltaSequence,
 } from "./ink";
 
-export const EXPORT_SCHEMA_VERSION = 2;
+export const EXPORT_SCHEMA_VERSION = 3;
 const SEP = "--";
 
 type LabelKeyParts = Pick<SampleLabel, "script" | "key" | "case">;
@@ -127,7 +127,7 @@ export function buildExportBundle(samples: HandwritingSample[], now = Date.now()
     featureDims: FEATURE_DIMS,
     notes:
       "ink.strokes are raw canvas-pixel point sequences ([x, y, t_ms]) grouped per stroke. " +
-      "features.points is the flattened per-point representation [dx, dy, dt_ms, pen_up] produced by: " +
+      "features.points is the flattened per-point representation [dx, dy, dt_s, pen_up] produced by: " +
       "(1) normalizing the ink so its bbox height spans 1.0 and its centre is the origin, " +
       `(2) equidistant linear resampling along each stroke with delta=${RESAMPLE_DELTA} ` +
       "(a stroke of length 1 yields 20 points; timestamps interpolated linearly), " +

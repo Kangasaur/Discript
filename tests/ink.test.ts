@@ -90,9 +90,9 @@ describe("delta encoding", () => {
   it("emits [dx, dy, dt, pen_up] per point with pen-up at stroke ends", () => {
     expect(toPointDeltaSequence(strokes)).toEqual([
       [0, 0, 0, 0],
-      [10, 0, 16, 1],
-      [-10, 10, 84, 0],
-      [10, 0, 16, 1],
+      [10, 0, .016, 1],
+      [-10, 10, .084, 0],
+      [10, 0, .016, 1],
     ]);
   });
 });

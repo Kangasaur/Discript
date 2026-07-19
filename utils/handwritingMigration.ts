@@ -26,7 +26,8 @@ export function needsUpgrade(sample: HandwritingSample): boolean {
   return (
     sample?.features?.format !== FEATURE_FORMAT ||
     !sample.features?.resampling ||
-    typeof sample.stats?.featurePointCount !== "number"
+    typeof sample.stats?.featurePointCount !== "number" ||
+    sample.features?.points[1][2] > 1 
   );
 }
 /**

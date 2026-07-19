@@ -2,9 +2,9 @@ import type { InkPoint, InkStroke, PointTriplet } from "@/types/handwriting";
 
 export const RAW_INK_FORMAT = "raw-touch-points/v1";
 // v2: normalized coords are now equidistantly resampled before delta encoding.
-export const FEATURE_FORMAT = "point-deltas/v2";
+export const FEATURE_FORMAT = "point-deltas/v3";
 /** Per-point feature vector of the paper's raw touch-point baseline. */
-export const FEATURE_DIMS = ["dx", "dy", "dt_ms", "pen_up"];
+export const FEATURE_DIMS = ["dx", "dy", "dt_s", "pen_up"];
 /** Resampling spacing in normalized units (ink bbox height == 1). */
 export const RESAMPLE_DELTA = 0.05;
 
@@ -49,11 +49,9 @@ export function countPoints(strokes: InkStroke[]): number {
 }
 
 export function inkDurationMs(strokes: InkStroke[]): number {
-  let last = 0;
-  for (const stroke of strokes) {
-    for (const p of stroke) if (p.t > last) last = p.t;
-  }
-  return Math.round(last);
+  const lastStroke = strokes[strokes.length - 1];
+  const lastPoint = lastStroke?.[lastStroke.length - 1];
+  return Math.round(lastPoint?.t ?? 0);
 }
 
 /** Lossless-ish serialization of the captured point sequence. */
@@ -157,7 +155,7 @@ export function toPointDeltaSequence(strokes: InkStroke[], precision = 4): numbe
       const dx = prev ? p.x - prev.x : 0;
       const dy = prev ? p.y - prev.y : 0;
       const dt = prev ? p.t - prev.t : 0;
-      out.push([round(dx, precision), round(dy, precision), round(dt, 2), i === stroke.length - 1 ? 1 : 0]);
+      out.push([round(dx, precision), round(dy, precision), round(dt, 2)/1000, i === stroke.length - 1 ? 1 : 0]);
       prev = p;
     }
   }
