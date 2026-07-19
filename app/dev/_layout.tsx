@@ -1,5 +1,8 @@
 import { Redirect, Stack } from "expo-router";
-import { DEV_THEME } from "@/utils/devTheme";
+import appTheme from "@/data/app.json";
+import type { AppTheme } from "@/types/data";
+
+const theme = (appTheme as AppTheme).colors;
 
 export default function DevLayout() {
   // Dev tools never ship.
@@ -8,10 +11,10 @@ export default function DevLayout() {
   return (
     <Stack
       screenOptions={{
-        headerStyle: { backgroundColor: DEV_THEME.primary },
-        headerTintColor: DEV_THEME.onPrimary,
+        headerStyle: { backgroundColor: theme.primary },
+        headerTintColor: theme.onPrimary,
         headerTitleStyle: { fontFamily: "NotoSerif_600SemiBold" },
-        contentStyle: { backgroundColor: DEV_THEME.background },
+        contentStyle: { backgroundColor: theme.background },
       }}
     >
       <Stack.Screen name="index" options={{ title: "Dev Tools" }} />

@@ -29,17 +29,17 @@ beforeEach(() => {
 
 describe("CharacterRefButton", () => {
   it("shows the reference label when present", () => {
-    renderButton({ character: "а", latin: "a", reference: "Аа" });
+    renderButton({ character: "а", key: "a", latin: "a", reference: "Аа" });
     expect(screen.getByText("Аа")).toBeInTheDocument();
   });
 
   it("falls back to the character when there is no reference", () => {
-    renderButton({ character: "ж", latin: "zh" });
+    renderButton({ character: "ж", key: "zh", latin: "zh" });
     expect(screen.getByText("ж")).toBeInTheDocument();
   });
 
   it("plays the audio from the start when pressed", () => {
-    renderButton({ character: "а", latin: "a", audioFile: "lesson-01/a" });
+    renderButton({ character: "а", key: "a", latin: "a", audioFile: "lesson-01/a" });
     fireEvent.click(screen.getByText("а"));
     expect(player.seekTo).toHaveBeenCalledWith(0);
     expect(player.play).toHaveBeenCalledTimes(1);
@@ -47,7 +47,7 @@ describe("CharacterRefButton", () => {
 
   it("invokes a provided onPress instead of playing audio", () => {
     const onPress = vi.fn();
-    renderButton({ character: "а", latin: "a", audioFile: "lesson-01/a" }, onPress);
+    renderButton({ character: "а", key: "a", latin: "a", audioFile: "lesson-01/a" }, onPress);
     fireEvent.click(screen.getByText("а"));
     expect(onPress).toHaveBeenCalledTimes(1);
     expect(player.play).not.toHaveBeenCalled();

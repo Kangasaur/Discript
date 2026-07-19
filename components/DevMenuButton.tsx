@@ -1,6 +1,9 @@
-import { Link } from "expo-router";
+import { useRouter } from "expo-router";
 import { Pressable, StyleSheet, Text, type StyleProp, type ViewStyle } from "react-native";
-import { DEV_THEME } from "@/utils/devTheme";
+import appTheme from "@/data/app.json";
+import type { AppTheme } from "@/types/data";
+
+const theme = (appTheme as AppTheme).colors;
 
 interface Props {
   style?: StyleProp<ViewStyle>;
@@ -10,17 +13,18 @@ interface Props {
 export default function DevMenuButton({ style }: Props) {
   if (!__DEV__) return null;
 
+  const router = useRouter();
+
   return (
-    <Link href="/dev" asChild>
-      <Pressable
-        accessibilityRole="button"
-        accessibilityLabel="Open dev tools"
-        hitSlop={8}
-        style={({ pressed }) => [styles.pill, pressed && styles.pressed, style]}
-      >
-        <Text style={styles.text}>DEV TOOLS</Text>
-      </Pressable>
-    </Link>
+    <Pressable
+      accessibilityRole="button"
+      accessibilityLabel="Open dev tools"
+      hitSlop={8}
+      onPress={() => router.push("/dev")}
+      style={({ pressed }) => [styles.pill, pressed && styles.pressed, style]}
+    >
+      <Text style={styles.text}>DEV TOOLS</Text>
+    </Pressable>
   );
 }
 
@@ -28,18 +32,18 @@ const styles = StyleSheet.create({
   pill: {
     alignSelf: "center",
     marginTop: 24,
-    paddingVertical: 6,
-    paddingHorizontal: 14,
+    paddingVertical: 24,
+    paddingHorizontal: 20,
     borderRadius: 999,
-    borderWidth: 1,
-    borderColor: DEV_THEME.cardBorder,
+    borderWidth: 2,
+    borderColor: theme.cardBorder,
     opacity: 0.7,
   },
-  pressed: { opacity: 1, backgroundColor: DEV_THEME.primary },
+  pressed: { opacity: 1, backgroundColor: theme.primary },
   text: {
-    fontSize: 11,
+    fontSize: 12,
     letterSpacing: 1.5,
     fontFamily: "NotoSerif_600SemiBold",
-    color: DEV_THEME.textMuted,
+    color: theme.textMuted,
   },
 });

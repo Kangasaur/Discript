@@ -1,7 +1,8 @@
 import { useCallback, useEffect, useState } from "react";
 import { Alert, Platform, ScrollView, StyleSheet, Text, View } from "react-native";
 import AppButton from "@/components/ui/AppButton";
-import { DEV_FALLBACK_COLORS as COLORS } from "@/utils/devTheme";
+import appTheme from "@/data/app.json";
+import type { AppTheme, ScriptColors } from "@/types/data";
 import { FEATURE_FORMAT } from "@/utils/ink";
 import {
   migrateAllSamples,
@@ -10,6 +11,15 @@ import {
   type MigrationScan,
 } from "@/utils/handwritingMigration";
 import { exportSamples } from "@/utils/handwritingStorage";
+const theme = (appTheme as AppTheme).colors;
+const COLORS: ScriptColors = {
+  background: theme.background,
+  primary: theme.primary,
+  accent: theme.cardBorder,
+  accentPressed: theme.textMuted,
+  muted: theme.textMuted,
+  onPrimary: theme.onPrimary,
+};
 function confirm(title: string, message: string, confirmLabel: string, onConfirm: () => void) {
   if (Platform.OS === "web") {
     if ((globalThis as any).confirm?.(message)) onConfirm();

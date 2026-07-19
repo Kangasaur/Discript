@@ -3,7 +3,7 @@ import { shuffle, buildQueue, formatTime } from "@/utils/quiz";
 import type { Entry } from "@/types/data";
 
 function entries(...chars: string[]): Entry[] {
-  return chars.map((c) => ({ character: c, latin: c }));
+  return chars.map((c) => ({ character: c, key: c, latin: c }));
 }
 
 afterEach(() => {

@@ -6,12 +6,23 @@ import ToggleRow from "@/components/ui/ToggleRow";
 import CharacterPicker from "@/components/writing/CharacterPicker";
 import DrawingCanvas from "@/components/writing/DrawingCanvas";
 import WritingPrompt from "@/components/writing/WritingPrompt";
+import { getAllScripts } from "@/contexts/ScriptTheme";
 import { availableCases, getHandwritingScript, getHandwritingScripts, glyphFor } from "@/data/handwriting";
-import type { ScriptColors } from "@/types/data";
+import appTheme from "@/data/app.json";
+import type { AppTheme, ScriptColors } from "@/types/data";
 import type { InkStroke, LetterCase, SampleLabel } from "@/types/handwriting";
-import { resolveScriptColors } from "@/utils/devTheme";
 import { buildSample, countsByLabel, labelId } from "@/utils/handwritingSamples";
 import { deleteAllSamples, exportSamples, listSampleIds, saveSample } from "@/utils/handwritingStorage";
+// Used when a handwriting script has no matching entry in scripts.json.
+const themeColors = (appTheme as AppTheme).colors;
+const FALLBACK_COLORS: ScriptColors = {
+  background: themeColors.background,
+  primary: themeColors.primary,
+  accent: themeColors.cardBorder,
+  accentPressed: themeColors.textMuted,
+  muted: themeColors.textMuted,
+  onPrimary: themeColors.onPrimary,
+};
 const DIAGRAM_OPACITY = 0.3;
 type Status = { kind: "ok" | "error"; text: string } | null;
 function notify(title: string, message: string) {
@@ -51,7 +62,10 @@ export default function HandwritingCollectionScreen() {
   const [saving, setSaving] = useState(false);
   const [exporting, setExporting] = useState(false);
   const [status, setStatus] = useState<Status>(null);
-  const colors = useMemo(() => resolveScriptColors(scriptId), [scriptId]);
+  const colors = useMemo(
+    () => getAllScripts().find((s) => s.id === scriptId)?.colors ?? FALLBACK_COLORS,
+    [scriptId],
+  );
   const styles = useMemo(() => makeStyles(colors), [colors]);
   const label: SampleLabel | null = useMemo(() => {
     if (!script || !character) return null;

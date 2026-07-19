@@ -32,7 +32,7 @@ export default function Index() {
           <ScriptCard key={script.id} script={script} onPress={openScript} />
         ))}
       </View>
-      <DevMenuButton style={{ position: "absolute", bottom: 24, right: 16, marginTop: 0 }} />
+      <DevMenuButton />
     </ScrollView>
   );
 }
