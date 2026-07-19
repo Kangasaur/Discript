@@ -6,8 +6,10 @@ Controls:
     Prev / Next buttons  (or left/right arrow keys)
     Mode button          (or 'm') - switch between display_ink and display_features
     Reject button        (or 'r') - toggle "unfit for training" on the current sample
-    Filter box           - substring match on script / key / case / latin / label id
-                           (e.g. "cyrillic", "zh", "upper", "cyrillic--zh--upper")
+    Script box           - substring match on the script field ("*" / "all" / "" = any)
+    Label box            - structured "key:case" match; key matches key/latin/character
+                           only (not ids), case is a startswith. e.g. "zh", "zh:upper",
+                           "ya", "*". Blank / "*" / "all" = any.
     Go-to box            - 1-based index within the current filtered list
 Rejections are persisted immediately to a sidecar JSON file (default:
 <export>.rejects.json) as {"rejected": [sample ids...]}. When you build the
@@ -123,29 +125,44 @@ DISPLAY_MODES = {"ink": display_ink, "features": display_features}
 def label_id(sample: dict) -> str:
     label = sample.get("label", {})
     return "--".join([label.get("script", "?"), label.get("key", "?"), label.get("case", "?")])
-def search_text(sample: dict) -> str:
+def sample_matches(sample: dict, script_q: str, label_q: str) -> bool:
+    """
+    Structured filter: `script_q` is a substring match on the script field;
+    `label_q` is parsed as "key:case" where the key part matches the key /
+    latin / character fields (not ids) and the case part is a startswith.
+    Empty, "*", or "all" mean "match anything" for either query.
+    """
     label = sample.get("label", {})
-    parts = [
-        label.get("script", ""),
-        label.get("key", ""),
-        label.get("case", ""),
-        label.get("latin", ""),
-        label.get("character", "") or "",
-        label_id(sample),
-        sample.get("id", ""),
-    ]
-    return " ".join(parts).lower()
+    script = (label.get("script") or "").lower()
+    key = (label.get("key") or "").lower()
+    case = (label.get("case") or "").lower()
+    latin = (label.get("latin") or "").lower()
+    character = (label.get("character") or "").lower()
+    script_q = script_q.strip().lower()
+    if script_q and script_q not in {"*", "all"} and script_q not in script:
+        return False
+    label_q = label_q.strip().lower()
+    if not label_q or label_q in {"*", "all"}:
+        return True
+    key_q, _, case_q = label_q.partition(":")
+    if case_q and not case.startswith(case_q):
+        return False
+    if not key_q:
+        return True
+    return any(key_q in h for h in (key, latin, character) if h)
 class SampleViewer:
-    def __init__(self, bundle: dict, rejects_path: Path, mode: str) -> None:
+    def __init__(self, bundle: dict, rejects_path: Path, mode: str,
+                 script_filter: str = "", label_filter: str = "") -> None:
         self.samples: list[dict] = bundle.get("samples", [])
         self.rejects_path = rejects_path
         self.rejected: set[str] = self._load_rejects()
         self.mode = mode
-        self.filter_text = ""
+        self.script_filter = script_filter
+        self.label_filter = label_filter
         self.filtered: list[int] = list(range(len(self.samples)))
         self.pos = 0
         self._build_figure()
-        self.redraw()
+        self.apply_filter()
     # -- persistence --------------------------------------------------------
     def _load_rejects(self) -> set[str]:
         if self.rejects_path.exists():
@@ -178,18 +195,22 @@ class SampleViewer:
         self.mode_btn = Button(wax(0.31, 0.16), f"Mode: {self.mode}")
         self.reject_btn = Button(wax(0.49, 0.12), "Reject")
         self.seek_box = TextBox(wax(0.70, 0.08), "Go to ", initial="")
-        self.filter_box = TextBox(wax(0.31, 0.30, bottom=0.045), "Filter ", initial="")
+        self.script_box = TextBox(wax(0.15, 0.18, bottom=0.045), "Script ",
+                                  initial=self.script_filter)
+        self.label_box = TextBox(wax(0.55, 0.18, bottom=0.045), "Label ",
+                                 initial=self.label_filter)
         self.prev_btn.on_clicked(lambda _: self.step(-1))
         self.next_btn.on_clicked(lambda _: self.step(1))
         self.mode_btn.on_clicked(lambda _: self.toggle_mode())
         self.reject_btn.on_clicked(lambda _: self.toggle_reject())
         self.seek_box.on_submit(self.seek)
-        self.filter_box.on_submit(self.apply_filter)
+        self.script_box.on_submit(self._on_script)
+        self.label_box.on_submit(self._on_label)
         self.fig.canvas.mpl_connect("key_press_event", self._on_key)
     def _typing(self) -> bool:
         return any(
             getattr(box, "capturekeystrokes", False)
-            for box in (self.seek_box, self.filter_box)
+            for box in (self.seek_box, self.script_box, self.label_box)
         )
     def _on_key(self, event) -> None:
         if self._typing():
@@ -223,17 +244,21 @@ class SampleViewer:
             return
         self.pos = max(0, min(index, len(self.filtered) - 1))
         self.redraw()
-    def apply_filter(self, text: str) -> None:
-        self.filter_text = text.strip().lower()
-        if self.filter_text:
-            self.filtered = [
-                i for i, s in enumerate(self.samples) if self.filter_text in search_text(s)
-            ]
-        else:
-            self.filtered = list(range(len(self.samples)))
+    def apply_filter(self) -> None:
+        self.filtered = [
+            i for i, s in enumerate(self.samples)
+            if sample_matches(s, self.script_filter, self.label_filter)
+        ]
         self.pos = 0
-        print(f"filter {self.filter_text!r}: {len(self.filtered)}/{len(self.samples)} samples")
+        print(f"filter script={self.script_filter or '*'!r} label={self.label_filter or '*'!r}: "
+              f"{len(self.filtered)}/{len(self.samples)} samples")
         self.redraw()
+    def _on_script(self, text: str) -> None:
+        self.script_filter = text
+        self.apply_filter()
+    def _on_label(self, text: str) -> None:
+        self.label_filter = text
+        self.apply_filter()
     def toggle_mode(self) -> None:
         self.mode = "features" if self.mode == "ink" else "ink"
         self.mode_btn.label.set_text(f"Mode: {self.mode}")
@@ -290,6 +315,8 @@ def main() -> None:
     )
     parser.add_argument("--mode", choices=tuple(DISPLAY_MODES), default="ink",
                         help="initial display mode (default: ink)")
+    parser.add_argument("--script", default="", help="initial script filter, e.g. cyrillic")
+    parser.add_argument("--label", default="", help="initial label filter, e.g. zh or zh:upper")
     args = parser.parse_args()
     bundle = json.loads(args.export.read_text(encoding="utf-8"))
     samples = bundle.get("samples", [])
@@ -301,7 +328,8 @@ def main() -> None:
         print("nothing to display", file=sys.stderr)
         sys.exit(1)
     rejects_path = args.rejects or args.export.with_suffix(".rejects.json")
-    viewer = SampleViewer(bundle, rejects_path, args.mode)
+    viewer = SampleViewer(bundle, rejects_path, args.mode,
+                          script_filter=args.script, label_filter=args.label)
     print(f"rejections will be saved to {rejects_path}")
     plt.show()
     # keep a reference so widgets aren't GC'd before show() returns
