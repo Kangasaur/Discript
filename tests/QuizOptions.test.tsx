@@ -5,6 +5,12 @@ import QuizOptions from "@/components/QuizOptions";
 import { DEFAULT_COUNT, MAX_COUNT } from "@/utils/quizOptions";
 import type { Lesson } from "@/types/data";
 
+// react-native-modal ships JSX in plain .js files (via react-native-animatable)
+// that vitest can't transform; mock it, mirroring the real isVisible behavior.
+vi.mock("react-native-modal", () => ({
+  default: ({ isVisible, children }: { isVisible: boolean; children: React.ReactNode }) =>
+    isVisible ? children : null,
+}));
 // QuizOptions renders CharacterRefButton, which pulls in audio assets.
 vi.mock("expo-audio", () => ({ useAudioPlayer: () => ({ seekTo: vi.fn(), play: vi.fn() }) }));
 vi.mock("@/data/cyrillic/audio", () => ({
@@ -78,8 +84,9 @@ describe("QuizOptions", () => {
     expect(onBack).toHaveBeenCalledTimes(1);
   });
 
-  it("renders a reference button per entry", () => {
+  it("renders a reference button per entry once the reference sheet is opened", () => {
     renderOptions();
+    fireEvent.click(screen.getByText("View Reference"));
     expect(screen.getByText("а")).toBeInTheDocument();
     expect(screen.getByText("б")).toBeInTheDocument();
     expect(screen.getByText("в")).toBeInTheDocument();

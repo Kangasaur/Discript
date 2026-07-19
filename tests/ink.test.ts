@@ -68,7 +68,12 @@ describe("resampling", () => {
     ];
     const out = resampleStroke(corner, 0.05);
     expect(out).toHaveLength(40);
-    expect(strokeLength(out)).toBeCloseTo(2, 5);
+    // Equidistant resampling cuts the corner when no sample lands exactly on the
+    // vertex, so the traced length falls just short of the true 2 — but by less
+    // than one step (0.05), staying well above the sqrt(2) start-to-end shortcut.
+    const length = strokeLength(out);
+    expect(length).toBeLessThanOrEqual(2);
+    expect(length).toBeGreaterThan(2 - 0.05);
   });
   it("keeps dots and zero-length strokes as a single point", () => {
     expect(resampleStroke([{ x: 5, y: 5, t: 0 }])).toHaveLength(1);
