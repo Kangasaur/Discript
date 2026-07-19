@@ -59,6 +59,8 @@ export interface SampleLabel {
 export interface HandwritingSample {
   id: string;
   label: SampleLabel;
+  /** was the stroke diagram on during collection? 0=no, 1=yes */
+  diagramOn: number;
   createdAt: string;
   canvas: { width: number; height: number };
   ink: {

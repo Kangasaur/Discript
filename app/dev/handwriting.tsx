@@ -97,7 +97,7 @@ export default function HandwritingCollectionScreen() {
     if (!label || !hasInk || saving || canvasSize.width === 0) return;
     setSaving(true);
     try {
-      const sample = buildSample({ label, strokes, canvas: canvasSize });
+      const sample = buildSample({ label, diaOn: showDiagram, strokes, canvas: canvasSize });
       await saveSample(sample);
       setCounts((prev) => ({ ...prev, [labelId(label)]: (prev[labelId(label)] ?? 0) + 1 }));
       setSessionCount((n) => n + 1);

@@ -68,8 +68,7 @@ def feature_strokes(sample: dict) -> list[list[tuple[float, float, float]]]:
 # Drawing
 # ---------------------------------------------------------------------------
 def _draw_strokes(ax, strokes) -> None:
-    last_stroke = strokes[-1] if strokes else None
-    t_max = last_stroke[-1][2] if last_stroke else 0.0
+    t_max = max((p[2] for s in strokes for p in s), default=0.0)
     norm = Normalize(vmin=0.0, vmax=max(t_max, 1e-9))
     for i, stroke in enumerate(strokes):
         xs = [p[0] for p in stroke]
@@ -297,7 +296,8 @@ class SampleViewer:
             f"{self.pos + 1}/{len(self.filtered)}   "
             f"{label_id(sample)}   {glyph}  (latin: {label.get('latin', '?')})\n"
             f"{stats.get('strokeCount', '?')} strokes, {stats.get('pointCount', '?')} points, "
-            f"{stats.get('durationMs', '?')} ms   |   {sample.get('createdAt', '')}"
+            f"{stats.get('durationMs', '?')} ms   |   {sample.get('createdAt', '')}   |   Stroke diagram "
+            + ("ON" if sample.get("diagramOn") == 1 else "OFF")
             + ("   |   REJECTED" if rejected else "")
         )
         self.fig.suptitle(title, fontsize=11, color=REJECT_COLOR if rejected else OK_COLOR)

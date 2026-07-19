@@ -13,7 +13,7 @@ import {
   toPointDeltaSequence,
 } from "./ink";
 
-export const EXPORT_SCHEMA_VERSION = 3;
+export const EXPORT_SCHEMA_VERSION = 4;
 const SEP = "--";
 
 type LabelKeyParts = Pick<SampleLabel, "script" | "key" | "case">;
@@ -79,15 +79,17 @@ export function buildFeatures(strokes: InkStroke[]): HandwritingSample["features
 
 export function buildSample(params: {
   label: SampleLabel;
+  diaOn: boolean;
   strokes: InkStroke[];
   canvas: { width: number; height: number };
   now?: number;
 }): HandwritingSample {
-  const { label, strokes, canvas, now = Date.now() } = params;
+  const { label, diaOn, strokes, canvas, now = Date.now() } = params;
   const features = buildFeatures(strokes);
   return {
     id: buildSampleId(label, now),
     label,
+    diagramOn: diaOn ? 1 : 0,
     createdAt: new Date(now).toISOString(),
     canvas: { width: Math.round(canvas.width), height: Math.round(canvas.height) },
     ink: {
