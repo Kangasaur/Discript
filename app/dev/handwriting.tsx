@@ -112,10 +112,10 @@ export default function HandwritingCollectionScreen() {
     setSaving(true);
     try {
       const sample = buildSample({ label, diaOn: showDiagram, strokes, canvas: canvasSize });
+      setStrokes([]);
       await saveSample(sample);
       setCounts((prev) => ({ ...prev, [labelId(label)]: (prev[labelId(label)] ?? 0) + 1 }));
       setSessionCount((n) => n + 1);
-      setStrokes([]);
       setStatus({
         kind: "ok",
         text:
