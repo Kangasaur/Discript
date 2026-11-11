@@ -1,6 +1,5 @@
 import { useMemo, useRef, useState } from "react";
-import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
-import Modal from "react-native-modal";
+import { Modal, Pressable, StyleSheet, Text, TextInput, View, useWindowDimensions } from "react-native";
 import { useScriptTheme } from "@/contexts/ScriptTheme";
 import type { Lesson, ScriptColors } from "@/types/data";
 import { DEFAULT_COUNT, clamp } from "@/utils/quizOptions";
@@ -18,6 +17,7 @@ interface Props {
 export default function QuizOptions({ lesson, onStart, onBack }: Props) {
   const { colors } = useScriptTheme();
   const styles = useMemo(() => makeStyles(colors), [colors]);
+  const { width } = useWindowDimensions();
 
   const [count, setCount] = useState(DEFAULT_COUNT);
   const [refVisible, setRefVisible] = useState(false);
@@ -62,18 +62,23 @@ export default function QuizOptions({ lesson, onStart, onBack }: Props) {
   return (
     <View style={styles.container}>
       <Modal
-        isVisible={refVisible}
-        backdropOpacity={0.8}
-        onBackdropPress={() => setRefVisible(false)}
-        style={{marginHorizontal: 0, justifyContent: "flex-start"}}
+        visible={refVisible}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setRefVisible(false)}
         >
-        <View style={styles.modalHeader}>
-          <Pressable style={styles.backButton} onPress={() => {setRefVisible(false)}}>
-            <Text style={styles.backButtonText}>Close</Text>
-          </Pressable>
-        </View>
-        <View style={styles.modalBody}>
-          <CharacterReferenceSheet lesson={lesson}/>
+        <View style={styles.modalBackground}>
+          {/* box-none lets taps outside the sheet fall through to the backdrop */}
+          <View style={[styles.modalContent, { marginVertical: width * 0.05 }]}>
+            <View style={styles.modalHeader}>
+              <Pressable style={styles.backButton} onPress={() => {setRefVisible(false)}}>
+                <Text style={styles.backButtonText}>Close</Text>
+              </Pressable>
+            </View>
+            <View style={styles.modalBody}>
+              <CharacterReferenceSheet lesson={lesson}/>
+            </View>
+          </View>
         </View>
       </Modal>
       <View style={styles.footer}>
@@ -220,14 +225,21 @@ function makeStyles(colors: ScriptColors) {
       fontFamily: "NotoSerif_400Regular",
     },
     modalBackground: {
-      backgroundColor: "#000000c0",
+      backgroundColor: "rgba(0, 0, 0, 0.8)",
       flex: 1,
+    },
+    modalContent: {
+      flex: 1,
+      justifyContent: "flex-start",
+      pointerEvents: "box-none",
     },
     modalHeader: {
       flexDirection:"row-reverse",
       paddingTop: 20,
+      pointerEvents: "box-none",
     },
     modalBody: {
+      pointerEvents: "box-none",
       maxWidth: 900,
       justifyContent: "center",
       alignSelf: "center",

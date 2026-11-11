@@ -1,10 +1,10 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { render, screen, fireEvent } from "@testing-library/react";
+import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import { ScriptThemeProvider } from "@/contexts/ScriptTheme";
 import CharacterRefButton from "@/components/CharacterRefButton";
 import type { Entry } from "@/types/data";
 
-const player = { seekTo: vi.fn(), play: vi.fn() };
+const player = { seekTo: vi.fn(() => Promise.resolve()), play: vi.fn() };
 vi.mock("expo-audio", () => ({
   useAudioPlayer: () => player,
 }));
@@ -38,11 +38,29 @@ describe("CharacterRefButton", () => {
     expect(screen.getByText("ж")).toBeInTheDocument();
   });
 
-  it("plays the audio from the start when pressed", () => {
+  it("plays the audio from the start when pressed", async () => {
     renderButton({ character: "а", key: "a", latin: "a", audioFile: "lesson-01/a" });
     fireEvent.click(screen.getByText("а"));
     expect(player.seekTo).toHaveBeenCalledWith(0);
-    expect(player.play).toHaveBeenCalledTimes(1);
+    await waitFor(() => expect(player.play).toHaveBeenCalledTimes(1));
+  });
+
+  it("waits for the seek to finish before playing", async () => {
+    let finishSeek!: () => void;
+    player.seekTo.mockImplementationOnce(() => new Promise<void>((r) => (finishSeek = r)));
+    renderButton({ character: "а", key: "a", latin: "a", audioFile: "lesson-01/a" });
+    fireEvent.click(screen.getByText("а"));
+    await Promise.resolve();
+    expect(player.play).not.toHaveBeenCalled();
+    finishSeek();
+    await waitFor(() => expect(player.play).toHaveBeenCalledTimes(1));
+  });
+
+  it("does nothing when the entry has no audio", () => {
+    renderButton({ character: "ж", key: "zh", latin: "zh" });
+    fireEvent.click(screen.getByText("ж"));
+    expect(player.seekTo).not.toHaveBeenCalled();
+    expect(player.play).not.toHaveBeenCalled();
   });
 
   it("invokes a provided onPress instead of playing audio", () => {

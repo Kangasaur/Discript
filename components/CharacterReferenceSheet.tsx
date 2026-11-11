@@ -16,7 +16,7 @@ interface Props {
 
 export default function CharacterReferenceSheet({lesson} : Props) {
     return (
-        <ScrollView style={styles.scroll} contentContainerStyle={{alignContent:"center"}}>
+        <ScrollView style={styles.scroll} contentContainerStyle={{alignContent:"center", paddingBottom: 60}}>
             <Text style={styles.title}>{lesson.title}</Text>
             <View style={styles.grid}>
                 {lesson.entries.map((entry) => {

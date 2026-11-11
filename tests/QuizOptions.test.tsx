@@ -5,12 +5,6 @@ import QuizOptions from "@/components/QuizOptions";
 import { DEFAULT_COUNT, MAX_COUNT } from "@/utils/quizOptions";
 import type { Lesson } from "@/types/data";
 
-// react-native-modal ships JSX in plain .js files (via react-native-animatable)
-// that vitest can't transform; mock it, mirroring the real isVisible behavior.
-vi.mock("react-native-modal", () => ({
-  default: ({ isVisible, children }: { isVisible: boolean; children: React.ReactNode }) =>
-    isVisible ? children : null,
-}));
 // QuizOptions renders CharacterRefButton, which pulls in audio assets.
 vi.mock("expo-audio", () => ({ useAudioPlayer: () => ({ seekTo: vi.fn(), play: vi.fn() }) }));
 vi.mock("@/data/cyrillic/audio", () => ({
@@ -27,6 +21,15 @@ const lesson: Lesson = {
     { character: "в", latin: "v" },
   ],
 };
+
+// react-native-web keeps an animated Modal mounted until its CSS animationend
+// fires, which jsdom never does. Its handler ignores events not targeted at the
+// animation wrapper, so dispatch on every ancestor to hit that wrapper.
+function finishModalAnimation(inside: HTMLElement) {
+  for (let el: HTMLElement | null = inside; el; el = el.parentElement) {
+    fireEvent.animationEnd(el);
+  }
+}
 
 function renderOptions(overrides: Partial<React.ComponentProps<typeof QuizOptions>> = {}) {
   const props = {
@@ -90,5 +93,28 @@ describe("QuizOptions", () => {
     expect(screen.getByText("а")).toBeInTheDocument();
     expect(screen.getByText("б")).toBeInTheDocument();
     expect(screen.getByText("в")).toBeInTheDocument();
+  });
+
+  it("does not render the reference sheet until opened", () => {
+    renderOptions();
+    expect(screen.queryByText("а")).not.toBeInTheDocument();
+  });
+
+  it("closes the reference sheet via the Close button", () => {
+    renderOptions();
+    fireEvent.click(screen.getByText("View Reference"));
+    const glyph = screen.getByText("а");
+    fireEvent.click(screen.getByText("Close"));
+    finishModalAnimation(glyph);
+    expect(screen.queryByText("а")).not.toBeInTheDocument();
+  });
+
+  it("closes the reference sheet when the backdrop is pressed", () => {
+    renderOptions();
+    fireEvent.click(screen.getByText("View Reference"));
+    const glyph = screen.getByText("а");
+    fireEvent.click(screen.getByLabelText("Close reference"));
+    finishModalAnimation(glyph);
+    expect(screen.queryByText("а")).not.toBeInTheDocument();
   });
 });

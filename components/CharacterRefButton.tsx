@@ -16,12 +16,15 @@ export default function CharacterRefButton({ entry, onPress }: Props) {
 
   const player = useAudioPlayer(
     entry.audioFile ? cyrillicAudio[entry.audioFile] : null,
+    // Keep the session alive between taps so replays don't wait on reactivation
+    { keepAudioSessionActive: true },
   );
 
-  function playSound() {
+  async function playSound() {
     if (entry.audioFile) {
-      player.seekTo(0)
-      player.play()
+      // seekTo is async; playing before it settles can no-op on a finished clip
+      await player.seekTo(0);
+      player.play();
     }
   }
 
