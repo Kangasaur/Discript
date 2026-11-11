@@ -6,12 +6,7 @@ import QuizOptions from "@/components/QuizOptions";
 import { useScriptTheme } from "@/contexts/ScriptTheme";
 import type { Lesson, ScriptColors } from "@/types/data";
 import cyrillicMeta from "@/data/cyrillic/meta.json";
-
-// Metro requires statically-analyzable import paths, so all lesson files
-// must be enumerated explicitly here.
-const LESSON_LOADERS: Record<string, () => Promise<{ default: Lesson }>> = {
-  "cyrillic/lesson-01": () => import("@/data/cyrillic/lesson-01.json"),
-};
+import { getLesson } from "@/data/lessons";
 
 type Screen = "menu" | "options" | "quiz";
 
@@ -25,10 +20,8 @@ export default function CyrillicIndex() {
   const [loadingLesson, setLoadingLesson] = useState<string | null>(null);
 
   async function openOptions(scriptId: string, lessonId: string) {
-    const loader = LESSON_LOADERS[`${scriptId}/${lessonId}`];
-    if (!loader) return;
     setLoadingLesson(lessonId);
-    const module = await loader();
+    const module = await getLesson(scriptId, lessonId)
     setActiveLesson(module.default as Lesson);
     setLoadingLesson(null);
     setScreen("options");

@@ -1,50 +1,54 @@
 import type { Entry, Lesson, ScriptMeta } from "@/types/data";
 import { devWarn } from "@/utils/devWarn";
 import cyrillicMeta from "./cyrillic/meta.json";
-import cyrillicLesson01 from "./cyrillic/lesson-01.json";
+
 interface ScriptLessonData {
   meta: ScriptMeta;
   /** keyed by the ids listed in meta.lessons */
-  lessons: Record<string, Lesson>;
+  lessons: Record<string, () => Promise<{ default: Lesson }>>;
 }
+
 // ── Add new lessons / scripts here ────────────────────────────────────────────
-const SCRIPT_LESSON_DATA: Record<string, ScriptLessonData> = {
+const SCRIPT_LESSON_LOADERS: Record<string, ScriptLessonData> = {
   cyrillic: {
     meta: cyrillicMeta as unknown as ScriptMeta,
     lessons: {
-      "lesson-01": cyrillicLesson01 as unknown as Lesson,
+      "lesson-01": () => import("@/data/cyrillic/lesson-01.json"),
     },
   },
 };
 // ─────────────────────────────────────────────────────────────────────────────
 const stripExtension = (id: string) => id.replace(/\.json$/i, "");
 export function getScriptIds(): string[] {
-  return Object.keys(SCRIPT_LESSON_DATA);
+  return Object.keys(SCRIPT_LESSON_LOADERS);
 }
 export function getScriptMeta(scriptId: string): ScriptMeta | undefined {
-  return SCRIPT_LESSON_DATA[scriptId]?.meta;
+  return SCRIPT_LESSON_LOADERS[scriptId]?.meta;
 }
-/** Lessons for a script, ordered by meta.lessons. */
-export function getLessons(scriptId: string): Lesson[] {
-  const data = SCRIPT_LESSON_DATA[scriptId];
+/** Loads all lessons for a script, ordered by a flattened meta.lessons. */
+export async function getLessons(scriptId: string): Promise<Lesson[]> {
+  const data = SCRIPT_LESSON_LOADERS[scriptId];
   if (!data) {
     devWarn(`[lessons] unknown script "${scriptId}"`);
     return [];
   }
-  const ids = data.meta.lessons //data.meta?.lessons?.length ? data.meta.lessons : Object.keys(data.lessons);
+  const ids = data.meta.lessons
   const lessons: Lesson[] = [];
   for (const id of ids) {
-    const lesson = data.lessons[id.id] ?? data.lessons[stripExtension(id.id)];
-    if (lesson) lessons.push(lesson);
+    const lesson = await getLesson(scriptId, id.id)
+    if (lesson) lessons.push(lesson.default as Lesson);
     else devWarn(`[lessons] ${scriptId}: "${id}" is listed in meta.json but not imported in data/lessons.ts`);
   }
   return lessons;
 }
-export function getLesson(scriptId: string, lessonId: string): Lesson | undefined {
-  const lessons = SCRIPT_LESSON_DATA[scriptId]?.lessons;
-  return lessons?.[lessonId] ?? lessons?.[stripExtension(lessonId)];
+export async function getLesson(scriptId: string, lessonId: string): Promise<{default: Lesson}>{
+  const lessons = SCRIPT_LESSON_LOADERS[scriptId]?.lessons;
+  const loader = lessons[lessonId];
+  const lesson = await loader();
+  return lesson;
 }
 /** Every entry of every lesson, in lesson order. */
-export function getEntries(scriptId: string): Entry[] {
-  return getLessons(scriptId).flatMap((lesson) => lesson.entries ?? []);
+export async function getEntries(scriptId: string): Promise<Entry[]> {
+  const lessons = await getLessons(scriptId);
+  return lessons.flatMap((lesson) => lesson.entries ?? []);
 }
