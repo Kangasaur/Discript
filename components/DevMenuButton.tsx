@@ -11,9 +11,9 @@ interface Props {
 
 /** Renders nothing outside of dev builds. */
 export default function DevMenuButton({ style }: Props) {
-  if (!__DEV__) return null;
-
   const router = useRouter();
+
+  if (!__DEV__) return null;
 
   return (
     <Pressable

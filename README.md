@@ -10,11 +10,11 @@ Per-script theming is applied at the route layout level, so navigating into a sc
 
 ## Stack
 
-- **Expo SDK 54** / **React Native 0.81** / **React 19**, targeting iOS, Android, and web
+- **Expo SDK 58** / **React Native 0.88** / **React 19**, targeting iOS, Android, and web
 - **expo-router 6** with file-based routing and typed routes
 - **TypeScript** in strict mode
 - **expo-audio** for character pronunciation playback
-- **@react-navigation** (native, drawer, bottom-tabs, elements) wired through expo-router
+- **React Navigation**, vendored inside expo-router (`expo-router/drawer`, `expo-router/react-navigation`)
 
 ## Project layout
 

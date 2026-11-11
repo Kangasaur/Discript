@@ -21,7 +21,7 @@ There is no test runner configured yet.
 
 ## Architecture
 
-**Discript** is an Expo (SDK 54) React Native app targeting Android, iOS, and web.
+**Discript** is an Expo (SDK 58) React Native app targeting Android, iOS, and web.
 
 - **Routing**: File-based routing via `expo-router`. The `app/` directory is the entire route tree. `app/_layout.tsx` defines the root navigator; `app/index.tsx` is the home screen.
 - **Path alias**: `@/` maps to the repo root (e.g., `@/components/Foo` resolves to `./components/Foo`).
@@ -29,7 +29,9 @@ There is no test runner configured yet.
 - **TypeScript**: Strict mode. Config extends `expo/tsconfig.base`.
 - **Typed routes**: `experiments.typedRoutes` is enabled — route strings are type-checked by expo-router.
 
-Key installed but not yet wired up: `@react-navigation/bottom-tabs`, `expo-haptics`, `expo-image`, `react-native-reanimated`, `react-native-gesture-handler`.
+- **Navigation imports**: expo-router vendors its own copy of React Navigation. Import drawer components from `expo-router/drawer` and actions/hooks from `expo-router/react-navigation` — never from `@react-navigation/*`, which is a separate instance that can't see expo-router's navigators.
+
+Key installed but not yet wired up: `expo-haptics`, `expo-image`, `react-native-reanimated`, `react-native-gesture-handler`.
 
 - **Lesson data**: Static script/lesson content lives in `data/<script-id>/` as JSON files (`meta.json` for script metadata, `lesson-XX.json` for individual lessons). TypeScript interfaces define the shape. Lessons are loaded lazily via dynamic `import()` so only the needed lesson is in memory.
 

@@ -50,5 +50,5 @@ export default function StrokeDiagramOverlay({
 }
 
 const styles = StyleSheet.create({
-  clip: { ...StyleSheet.absoluteFillObject, overflow: "hidden" },
+  clip: { ...StyleSheet.absoluteFill, overflow: "hidden" },
 });

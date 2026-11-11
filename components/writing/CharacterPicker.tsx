@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef } from "react";
-import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { Pressable, ScrollView, StyleSheet, Text, View, type ScrollViewInstance } from "react-native";
 import type { ScriptColors } from "@/types/data";
 import type { HandwritingCharacter, LetterCase } from "@/types/handwriting";
 import { glyphFor } from "@/data/handwriting";
@@ -14,7 +14,7 @@ interface Props {
 
 export default function CharacterPicker({ characters, value, letterCase, colors, onChange }: Props) {
   const styles = useMemo(() => makeStyles(colors), [colors]);
-  const scrollRef = useRef<ScrollView>(null);
+  const scrollRef = useRef<ScrollViewInstance>(null);
   const chipLayouts = useRef<Record<string, { x: number; width: number }>>({});
   const viewportWidth = useRef(0);
 

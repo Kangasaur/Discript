@@ -5,6 +5,7 @@ import {
   View,
   Text,
   TextInput,
+  TextInputInstance,
   Pressable,
   StyleSheet,
   TouchableWithoutFeedback,
@@ -32,7 +33,7 @@ export default function Quiz({ lesson, questionCount, onExit }: Props) {
   const [status, setStatus] = useState<QuizStatus>("answering");
   const [score, setScore] = useState(0);
   const [elapsed, setElapsed] = useState(0);
-  const inputRef = useRef<TextInput>(null);
+  const inputRef = useRef<TextInputInstance>(null);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   useEffect(() => {

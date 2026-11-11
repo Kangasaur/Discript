@@ -1,10 +1,10 @@
-import { Drawer } from "expo-router/drawer";
 import {
+    Drawer,
     DrawerContentScrollView,
     DrawerItem,
     type DrawerContentComponentProps,
-} from "@react-navigation/drawer";
-import { CommonActions, DrawerActions } from "@react-navigation/native";
+} from "expo-router/drawer";
+import { CommonActions, DrawerActions } from "expo-router/react-navigation";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { Text } from "react-native";
 import {
@@ -117,7 +117,7 @@ export default function RootLayout() {
                         }
                     }}
                 />
-                <Drawer.Screen name="dev" options={{headerShown: false}} />
+                {/* <Drawer.Screen name="dev" options={{headerShown: false}} /> */}
                 {scripts.map((script) => (
                     <Drawer.Screen
                         key={script.id}
