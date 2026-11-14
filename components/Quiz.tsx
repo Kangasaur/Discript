@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo, useRef } from "react";
 import {
-  KeyboardAvoidingView,
+  Animated,
   Platform,
   View,
   Text,
@@ -11,6 +11,7 @@ import {
   TouchableWithoutFeedback,
   Keyboard,
 } from "react-native";
+import { KeyboardAvoidingView } from "react-native-keyboard-controller";
 import { useScriptTheme } from "@/contexts/ScriptTheme";
 import type { Lesson, ScriptColors } from "@/types/data";
 import { buildQueue, formatTime } from "@/utils/quiz";
@@ -90,64 +91,74 @@ export default function Quiz({ lesson, questionCount, onExit }: Props) {
   }
 
   return (
-    <KeyboardAvoidingView
+    <View
       style={styles.outer}
-      behavior={Platform.OS === "ios" ? "padding" : "height"}
     >
-      <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+      <TouchableWithoutFeedback onPress={ Platform.OS === "web" ? () => {} : Keyboard.dismiss}>
         <View style={styles.container}>
-        <View style={styles.header}>
-          <Text style={styles.headerText}>
-            {index + 1} / {total}
-          </Text>
-          <Text style={styles.headerText}>{formatTime(elapsed)}</Text>
-        </View>
+          <View style={styles.header}>
+            <Text style={styles.headerText}>
+              {index + 1} / {total}
+            </Text>
+            <Text style={styles.headerText}>{formatTime(elapsed)}</Text>
+          </View>
+          <KeyboardAvoidingView
+            behavior={"padding"}
+            keyboardVerticalOffset={100}
+            style={[styles.container, {width:"100%",}]}
+            >
+          {/* <Animated.View
+            style={[styles.container,{transform: [{translateY: progress.interpolate({
+              inputRange: [0, 1],
+              outputRange: [0, -60],
+            })}] }]}
+          > */}
+            <Text style={styles.character}>{current.character}</Text>
+            <Text style={styles.inputHint}>What sound does this make?</Text>
+            <TextInput
+              ref={inputRef}
+              style={[
+                styles.input,
+                status === "correct" && styles.inputCorrect,
+                status === "incorrect" && styles.inputIncorrect,
+              ]}
+              value={input}
+              onChangeText={setInput}
+              onSubmitEditing={submit}
+              autoFocus
+              autoCapitalize="none"
+              autoCorrect={false}
+              editable={status === "answering"}
+              returnKeyType="done"
+            />
 
-        <Text style={styles.character}>{current.character}</Text>
-        <Text style={styles.inputHint}>What sound does this make?</Text>
-        <TextInput
-          ref={inputRef}
-          style={[
-            styles.input,
-            status === "correct" && styles.inputCorrect,
-            status === "incorrect" && styles.inputIncorrect,
-          ]}
-          value={input}
-          onChangeText={setInput}
-          onSubmitEditing={submit}
-          autoFocus
-          autoCapitalize="none"
-          autoCorrect={false}
-          editable={status === "answering"}
-          returnKeyType="done"
-        />
+            {status === "correct" && (
+              <Text style={styles.feedbackCorrect}>Correct!</Text>
+            )}
+            {status === "incorrect" && (
+              <Text style={styles.feedbackIncorrect}>
+                Correct answer: {current.latin}
+              </Text>
+            )}
 
-        {status === "correct" && (
-          <Text style={styles.feedbackCorrect}>Correct!</Text>
-        )}
-        {status === "incorrect" && (
-          <Text style={styles.feedbackIncorrect}>
-            Correct answer: {current.latin}
-          </Text>
-        )}
+            {status === "answering" && (
+              <Pressable style={styles.button} onPress={submit}>
+                <Text style={styles.buttonText}>Submit</Text>
+              </Pressable>
+            )}
+            {(status === "incorrect" || status === "correct") && (
+              <Pressable style={styles.button} onPress={() => advance(index)}>
+                <Text style={styles.buttonText}>Next</Text>
+              </Pressable>
+            )}
 
-        {status === "answering" && (
-          <Pressable style={styles.button} onPress={submit}>
-            <Text style={styles.buttonText}>Submit</Text>
-          </Pressable>
-        )}
-        {(status === "incorrect" || status === "correct") && (
-          <Pressable style={styles.button} onPress={() => advance(index)}>
-            <Text style={styles.buttonText}>Next</Text>
-          </Pressable>
-        )}
-
-        <Pressable style={styles.exitButton} onPress={onExit}>
-          <Text style={styles.exitButtonText}>Exit</Text>
-        </Pressable>
+            <Pressable style={styles.exitButton} onPress={onExit}>
+              <Text style={styles.exitButtonText}>Exit</Text>
+            </Pressable>
+          </KeyboardAvoidingView>
         </View>
       </TouchableWithoutFeedback>
-    </KeyboardAvoidingView>
+    </View>
   );
 }
 

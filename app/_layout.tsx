@@ -6,6 +6,7 @@ import {
 } from "expo-router/drawer";
 import { CommonActions, DrawerActions } from "expo-router/react-navigation";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
+import { KeyboardProvider } from "react-native-keyboard-controller";
 import { Text } from "react-native";
 import {
     NotoSerif_300Light,
@@ -101,72 +102,73 @@ export default function RootLayout() {
     }
 
     return (
-        <GestureHandlerRootView style={{ flex: 1 }}>
-            <Drawer drawerContent={(props) => <CustomDrawerContent {...props} />}>
-                <Drawer.Screen
-                    name="index"
-                    options={{
-                        title: appTheme.name,
-                        headerStyle: {
-                            backgroundColor: appTheme.colors.background,
-                        },
-                        headerTitle: "",
-                        headerTintColor: appTheme.colors.onPrimary,
-                        drawerStyle: {
-                            backgroundColor: appTheme.colors.background,
-                        }
-                    }}
-                />
-                {/* <Drawer.Screen name="dev" options={{headerShown: false}} /> */}
-                {scripts.map((script) => (
+        <KeyboardProvider>
+            <GestureHandlerRootView style={{ flex: 1 }}>
+                <Drawer drawerContent={(props) => <CustomDrawerContent {...props} />}>
                     <Drawer.Screen
-                        key={script.id}
-                        name={script.id}
+                        name="index"
                         options={{
-                            title: script.name,
+                            title: appTheme.name,
                             headerStyle: {
                                 backgroundColor: appTheme.colors.background,
                             },
+                            headerTitle: "",
                             headerTintColor: appTheme.colors.onPrimary,
-                            headerTitleStyle: {
-                                fontFamily: "NotoSerif_600SemiBold"
-                            },
-                            drawerLabel: script.name,
-                            drawerIcon: ({ size }) => (
-                                <Text
-                                    style={{
-                                        fontFamily: "NotoSerif_300Light",
-                                        fontSize: size,
-                                        color: script.colors.onPrimary,
-                                        width: size + 8,
-                                        textAlign: "center",
-                                    }}
-                                >
-                                    {script.icon}
-                                </Text>
-                            ),
                             drawerStyle: {
                                 backgroundColor: appTheme.colors.background,
-                            },
-                            drawerItemStyle: {
-                                borderRadius: 0,
-                                width: "100%",
-                                paddingStart: 0,
-                                paddingEnd: 0,
-                            },
-                            drawerLabelStyle: {
-                                color: script.colors.onPrimary,
-                                fontFamily: "NotoSerif_600SemiBold",
-                                fontSize: 16,
-                                textAlign: "center",
-                                padding: 6,
-                                paddingStart: 0,
-                                paddingEnd: 0,
                             }
                         }}
                     />
-                ))}
-            </Drawer>
-        </GestureHandlerRootView>
+                    {scripts.map((script) => (
+                        <Drawer.Screen
+                            key={script.id}
+                            name={script.id}
+                            options={{
+                                title: script.name,
+                                headerStyle: {
+                                    backgroundColor: appTheme.colors.background,
+                                },
+                                headerTintColor: appTheme.colors.onPrimary,
+                                headerTitleStyle: {
+                                    fontFamily: "NotoSerif_600SemiBold"
+                                },
+                                drawerLabel: script.name,
+                                drawerIcon: ({ size }) => (
+                                    <Text
+                                        style={{
+                                            fontFamily: "NotoSerif_300Light",
+                                            fontSize: size,
+                                            color: script.colors.onPrimary,
+                                            width: size + 8,
+                                            textAlign: "center",
+                                        }}
+                                    >
+                                        {script.icon}
+                                    </Text>
+                                ),
+                                drawerStyle: {
+                                    backgroundColor: appTheme.colors.background,
+                                },
+                                drawerItemStyle: {
+                                    borderRadius: 0,
+                                    width: "100%",
+                                    paddingStart: 0,
+                                    paddingEnd: 0,
+                                },
+                                drawerLabelStyle: {
+                                    color: script.colors.onPrimary,
+                                    fontFamily: "NotoSerif_600SemiBold",
+                                    fontSize: 16,
+                                    textAlign: "center",
+                                    padding: 6,
+                                    paddingStart: 0,
+                                    paddingEnd: 0,
+                                }
+                            }}
+                        />
+                    ))}
+                </Drawer>
+            </GestureHandlerRootView>
+        </KeyboardProvider>
     );
 }
